@@ -28,8 +28,10 @@ app.add_middleware(
 UPLOAD_DIR = Path("Files/files")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-MAX_FILE_SIZE = 1 * 1024 * 1024 * 1024
-CHUNK_SIZE = 1024 * 1024
+MAX_FILE_SIZE = 1 * 1024 * 1024 * 1024  # 1 GB
+CHUNK_SIZE = 1024 * 1024  # 1 MB
+VIRUSTOTAL_MAX_SIZE = 32 * 1024 * 1024  # 32 MB (Public API limit)
+MOBSF_SUPPORTED_EXTENSIONS = ['.apk', '.xapk', '.ipa', '.appx', '.zip']
 
 @app.get('/')
 async def root():
@@ -39,8 +41,8 @@ async def root():
 async def uploadFile(
     file: UploadFile = File(...),
     accesstoken: str = Form(None),
-    virustotal: str = Form(True),
-    mobsf: str = Form(False),
+    virustotal: str = Form("true"),
+    mobsf: str = Form("false"),
 ):
     try:
         file_id = str(uuid.uuid4())
@@ -63,24 +65,66 @@ async def uploadFile(
                     )
 
                 await f.write(chunk)
+
+        # แปลง string เป็น boolean
+        virustotal_enabled = virustotal.lower() in ["true", "1", "yes"]
+        mobsf_enabled = mobsf.lower() in ["true", "1", "yes"]
+
+        print(f'virustotal : {virustotal_enabled}')
+        print(f'mobsf : {mobsf_enabled}')
+
         vrtt_report = None
         mob_response = None
-        if virustotal:
-            vrtt = VirusTotal()
-            vrtt_upload = vrtt.upload_file(file_path)
-            vrtt_report = vrtt.get_report(vrtt_upload["data"]['id'])
-        if mobsf:
-            mob = MobSF()
-            mob_response = mob.scan_file(file_path)
+        warnings = []
+
+        # VirusTotal scan
+        if virustotal_enabled:
+            if total_size > VIRUSTOTAL_MAX_SIZE:
+                warnings.append({
+                    "service": "VirusTotal",
+                    "message": f"File size ({total_size / (1024*1024):.2f} MB) exceeds VirusTotal limit (32 MB). Skipping VirusTotal scan."
+                })
+                print(f"Warning: File too large for VirusTotal ({total_size / (1024*1024):.2f} MB > 32 MB)")
+            else:
+                try:
+                    vrtt = VirusTotal()
+                    vrtt_upload = vrtt.upload_file(file_path)
+                    vrtt_report = vrtt.get_report(vrtt_upload["data"]['id'])
+                except Exception as e:
+                    warnings.append({
+                        "service": "VirusTotal",
+                        "message": f"VirusTotal scan failed: {str(e)}"
+                    })
+                    print(f"VirusTotal error: {str(e)}")
+
+        # MobSF scan
+        if mobsf_enabled:
+            if file_extension.lower() not in MOBSF_SUPPORTED_EXTENSIONS:
+                warnings.append({
+                    "service": "MobSF",
+                    "message": f"File type '{file_extension}' not supported by MobSF. Supported: {', '.join(MOBSF_SUPPORTED_EXTENSIONS)}"
+                })
+                print(f"Warning: MobSF does not support {file_extension} files")
+            else:
+                try:
+                    mob = MobSF()
+                    mob_response = mob.scan_file(file_path, original_filename=file.filename)
+                except Exception as e:
+                    warnings.append({
+                        "service": "MobSF",
+                        "message": f"MobSF scan failed: {str(e)}"
+                    })
+                    print(f"MobSF error: {str(e)}")
         
         return {
-            "virustotal":vrtt_report,
-            "mobsf":mob_response,
             "success": True,
             "file_id": file_id,
             "filename": file.filename,
             "file_path": str(file_path),
-            "size_bytes": total_size
+            "size_bytes": total_size,
+            "virustotal": vrtt_report,
+            "mobsf": mob_response,
+            "warnings": warnings if warnings else None
         }
 
     except HTTPException:
