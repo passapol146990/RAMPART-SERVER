@@ -115,8 +115,20 @@ async def uploadFile(
                         "message": f"MobSF scan failed: {str(e)}"
                     })
                     print(f"MobSF error: {str(e)}")
+
+        user_selected_report = {
+            "virustotal": vrtt_report,
+            "mobsf": mob_response,
+            "cape_sandbox": None
+        }
+        response = GeminiAPI().AnalysisGemini(user_selected_report)
+        print(response)
+        with open("report.json",'w',encoding="utf-") as df:
+            df.write(response)
+            df.close()
         
         return {
+            "response":response,
             "success": True,
             "file_id": file_id,
             "filename": file.filename,
