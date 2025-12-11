@@ -10,6 +10,7 @@ from pathlib import Path
 from Calling.GeminiAPI import GeminiAPI
 from Calling.VirusTotal import VirusTotal
 from Calling.MobSF import MobSF
+from utils.clearn_report import clean_mobsf_report, clean_virustotal_report
 
 app = FastAPI(
     title="RAMPART-AI",
@@ -27,6 +28,9 @@ app.add_middleware(
 
 UPLOAD_DIR = Path("Files/files")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+REPORT_DIR = Path("Files/report")
+REPORT_DIR.mkdir(parents=True, exist_ok=True)
 
 MAX_FILE_SIZE = 1 * 1024 * 1024 * 1024  # 1 GB
 CHUNK_SIZE = 1024 * 1024  # 1 MB
@@ -116,27 +120,77 @@ async def uploadFile(
                     })
                     print(f"MobSF error: {str(e)}")
 
+        # บันทึก reports แยกตามแต่ละ service
+        report_paths = {}
+
+        if vrtt_report:
+            vt_report_path = REPORT_DIR / f"{file_id}_virustotal.json"
+            with open(vt_report_path, 'w', encoding='utf-8') as f:
+                json.dump(vrtt_report, f, indent=2, ensure_ascii=False)
+            report_paths['virustotal'] = str(vt_report_path)
+            print(f"VirusTotal report saved: {vt_report_path}")
+
+        if mob_response:
+            mobsf_report_path = REPORT_DIR / f"{file_id}_mobsf.json"
+            with open(mobsf_report_path, 'w', encoding='utf-8') as f:
+                json.dump(mob_response, f, indent=2, ensure_ascii=False)
+            report_paths['mobsf'] = str(mobsf_report_path)
+            print(f"MobSF report saved: {mobsf_report_path}")
+
+        # สร้าง combined report
+        clean_vt = clean_virustotal_report(vrtt_report)
+        clean_mobsf = clean_mobsf_report(mob_response)
         user_selected_report = {
             "virustotal": vrtt_report,
             "mobsf": mob_response,
             "cape_sandbox": None
         }
+
+        # วิเคราะห์ด้วย Gemini
         response = GeminiAPI().AnalysisGemini(user_selected_report)
         print(response)
-        with open("report.json",'w',encoding="utf-") as df:
+
+        # บันทึก Gemini analysis report
+        gemini_report_path = REPORT_DIR / f"{file_id}_gemini_analysis.json"
+        with open(gemini_report_path, 'w', encoding='utf-8') as df:
             df.write(response)
-            df.close()
-        
+        report_paths['gemini_analysis'] = str(gemini_report_path)
+        print(f"Gemini analysis saved: {gemini_report_path}")
+
+        # บันทึก combined report (รวมทุกอย่าง)
+        combined_report_path = REPORT_DIR / f"{file_id}_combined.json"
+        combined_data = {
+            "file_info": {
+                "file_id": file_id,
+                "filename": file.filename,
+                "file_path": str(file_path),
+                "size_bytes": total_size,
+                "upload_timestamp": str(uuid.uuid1().time)
+            },
+            "reports": {
+                "virustotal": vrtt_report,
+                "mobsf": mob_response,
+                "gemini_analysis": response
+            },
+            "warnings": warnings if warnings else None,
+            "report_paths": report_paths
+        }
+        with open(combined_report_path, 'w', encoding='utf-8') as f:
+            json.dump(combined_data, f, indent=2, ensure_ascii=False)
+        report_paths['combined'] = str(combined_report_path)
+        print(f"Combined report saved: {combined_report_path}")
+
         return {
-            "response":response,
             "success": True,
             "file_id": file_id,
             "filename": file.filename,
             "file_path": str(file_path),
             "size_bytes": total_size,
+            "response": response,
             "virustotal": vrtt_report,
             "mobsf": mob_response,
-            "warnings": warnings if warnings else None
+            "warnings": warnings if warnings else None,
+            "report_paths": report_paths
         }
 
     except HTTPException:
