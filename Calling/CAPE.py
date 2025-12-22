@@ -43,10 +43,8 @@ class CAPEAnalyzer:
         is_pcap: bool = False,
     ) -> Dict[str, Any]:
         check_analy = self.cheack_analyer(file_path)
-        # pretty_json = json.dumps(check_analy, indent=4, ensure_ascii=False)
         if len(check_analy) > 0:
             return {
-                # "x":json.dumps(existing_task_id)
                 "status": "exists",
                 "task_id": check_analy[0],
                 "message": f"File already analyzed. Task ID: {check_analy[0]["id"]}"
@@ -146,121 +144,211 @@ class CAPEAnalyzer:
 
         if report.get("status") != "success":
             return report
-        return None
 
         raw_data = report.get("data", {})
-        
-        signatures = []
-        for sig in raw_data.get("signatures", []):
-            signatures.append({
-                "name": sig.get("name"),
-                "description": sig.get("description"),
-                "severity": sig.get("severity", 0)
-            })
 
-        network = raw_data.get("network", {})
-        network_summary = {
-            "hosts": network.get("hosts", [])[:5],
-            "http_requests": [req.get("uri") for req in network.get("http", [])[:5]],
-            "udp_count": len(network.get("udp", [])),
-            "tcp_count": len(network.get("tcp", []))
-        }
-
+        # === 1. Target File Information ===
         target = raw_data.get("target", {})
         file_info = target.get("file", {})
-        pe = file_info.get("pe",{})
-        versioninfo = pe.get("versioninfo",{})
+        pe_info = file_info.get("pe", {})
+        versioninfo = pe_info.get("versioninfo", [])
 
-        summary = raw_data.get("summary", {})
-        print(summary)
-
+        # Extract company name from PE version info
         company_name = "Unknown"
-        for item in versioninfo:
-            if item.get("name") == "CompanyName":
-                company_name = item.get("value")
+        product_name = "Unknown"
+        file_description = "Unknown"
 
-        filtered_data = {
-            "malscore": raw_data.get("malscore"),
-            "target_info": {
-                "name": file_info.get("name"),
-                "type": file_info.get("type"),
-                "size": file_info.get("size"),
-                "developer_company": company_name
-            },
-            "trust_info": {
-                "is_signed": len(signatures) > 0,
-                "signers": 0
-            },
-            "detected_signatures": signatures,
-            "network_summary": network_summary,
-            # "behavior_summary": {
-            #     "files_written": summary.get("file_written", [])[:10],
-            #     "registry_keys_modified": summary.get("regkey_written", [])[:10],
-            #     "mutexes": summary.get("mutex", [])[:5]
-            # }
+        for item in versioninfo:
+            name = item.get("name", "")
+            value = item.get("value", "")
+            if name == "CompanyName":
+                company_name = value
+            elif name == "ProductName":
+                product_name = value
+            elif name == "FileDescription":
+                file_description = value
+
+        # === 2. Signatures Analysis (จัดกลุ่มตาม severity) ===
+        all_signatures = raw_data.get("signatures", [])
+
+        critical_signatures = []  # severity 3+
+        warning_signatures = []   # severity 2
+        info_signatures = []      # severity 1
+
+        # ตรวจหา malware identification จาก signature names
+        malware_names = []
+
+        for sig in all_signatures:
+            sig_name = sig.get("name", "")
+            sig_desc = sig.get("description", "")
+            sig_severity = sig.get("severity", 0)
+
+            sig_data = {
+                "name": sig_name,
+                "description": sig_desc,
+                "severity": sig_severity
+            }
+
+            # จัดกลุ่มตาม severity
+            if sig_severity >= 3:
+                critical_signatures.append(sig_data)
+            elif sig_severity == 2:
+                warning_signatures.append(sig_data)
+            else:
+                info_signatures.append(sig_data)
+
+            # ตรวจหา malware family names
+            malware_keywords = [
+                "ransomware", "stealer", "trojan", "backdoor", "rootkit",
+                "banker", "cryptominer", "loader", "dropper", "keylogger",
+                "rat", "spyware", "worm", "virus", "exploit"
+            ]
+
+            for keyword in malware_keywords:
+                if keyword in sig_name.lower():
+                    malware_names.append(sig_name)
+                    break
+        
+        # === 3. Network Activity ===
+        network = raw_data.get("network", {})
+
+        hosts = network.get("hosts", [])
+        http_requests = network.get("http", [])
+        dns_requests = network.get("dns", [])
+        tcp_connections = network.get("tcp", [])
+        udp_connections = network.get("udp", [])
+
+        # Extract suspicious domains/IPs
+        suspicious_hosts = []
+        for host in hosts[:10]:  # Top 10 hosts
+            suspicious_hosts.append({
+                "ip": host.get("ip"),
+                "country": host.get("country_name", "Unknown")
+            })
+
+        # Extract HTTP requests (potential C2 communication)
+        http_summary = []
+        for req in http_requests[:10]:
+            http_summary.append({
+                "method": req.get("method"),
+                "uri": req.get("uri"),
+                "host": req.get("host")
+            })
+
+        # DNS queries
+        dns_summary = [dns.get("request") for dns in dns_requests[:10]]
+
+        network_summary = {
+            "has_network_activity": len(hosts) > 0,
+            "total_connections": len(tcp_connections) + len(udp_connections),
+            "suspicious_hosts": suspicious_hosts,
+            "http_requests": http_summary,
+            "dns_queries": dns_summary,
+            "tcp_count": len(tcp_connections),
+            "udp_count": len(udp_connections)
         }
 
-        print(filtered_data)
+        # === 4. Behavior Analysis ===
+        behavior = raw_data.get("behavior", {})
+        summary = behavior.get("summary", {})
 
+        behavior_summary = {
+            "files_written": summary.get("write_files", [])[:15],
+            "files_deleted": summary.get("delete_files", [])[:15],
+            "files_read": summary.get("read_files", [])[:15],
+            "registry_written": summary.get("write_keys", [])[:15],
+            "registry_deleted": summary.get("delete_keys", [])[:15],
+            "mutexes": summary.get("mutexes", [])[:10],
+            "commands": summary.get("executed_commands", [])[:10],
+        }
+
+        # === 5. TTPs (Tactics, Techniques, and Procedures) ===
+        ttps = raw_data.get("ttps", [])
+        ttps_summary = []
+
+        for ttp in ttps:
+            ttps_summary.append(ttp)
+
+        # === 6. CAPE Malware Extraction ===
+        cape_data = raw_data.get("CAPE", {})
+        cape_payloads = cape_data.get("payloads", []) if isinstance(cape_data, dict) else []
+
+        extracted_malware = [] 
+        for payload in cape_payloads[:5]:
+            extracted_malware.append({
+                "type": payload.get("cape_type"),
+                "yara": payload.get("yara", []),
+                "cape_yara": payload.get("cape_yara", []),
+                "size": payload.get("size")
+            })
+
+        # === 7. Malware Score ===
+        malscore = raw_data.get("malscore", 0.0)
+
+        # === 8. Info ===
+        info = raw_data.get("info", {})
+
+        # === Final Filtered Data for LLM ===
+        filtered_data = {
+            # ข้อมูลไฟล์
+            "target_info": {
+                "filename": file_info.get("name"),
+                "file_type": file_info.get("type"),
+                "file_size": file_info.get("size"),
+                "md5": file_info.get("md5"),
+                "sha256": file_info.get("sha256"),
+                "developer_company": company_name,
+                "product_name": product_name,
+                "file_description": file_description
+            },
+
+            # คะแนนความเสี่ยง
+            "malscore": malscore,
+
+            # Malware Identification
+            "malware_identification": {
+                "identified": len(malware_names) > 0,
+                "malware_families": list(set(malware_names)),  # Remove duplicates
+                "cape_payloads": extracted_malware
+            },
+
+            # Signatures (แบ่งตาม severity)
+            "signatures_analysis": {
+                "total_signatures": len(all_signatures),
+                "critical_count": len(critical_signatures),
+                "warning_count": len(warning_signatures),
+                "info_count": len(info_signatures),
+                "critical_signatures": critical_signatures[:10],  # Top 10
+                "warning_signatures": warning_signatures[:10],
+                "info_signatures": info_signatures[:5]
+            },
+
+            # Network Activity (สำคัญสำหรับ C2 detection)
+            "network_activity": network_summary,
+
+            # Behavior (พฤติกรรมการทำงาน)
+            "behavior_summary": behavior_summary,
+
+            # TTPs (Mitre ATT&CK)
+            "ttps": ttps_summary[:15],
+
+            # Additional Info
+            "analysis_info": {
+                "duration": info.get("duration"),
+                "started": info.get("started"),
+                "ended": info.get("ended")
+            }
+        }
+        
         return {
             "status": "success",
-            "data": filtered_data,
-            "defult":raw_data
+            "data": filtered_data
         }
 
-    def analyze_file_complete(
-        self,
-        file_path: str,
-        machine: Optional[str] = None,
-        is_pcap: bool = False,
-        wait: bool = True,
-        timeout: int = 600,
-        get_filtered_report: bool = True
-    ) -> Dict[str, Any]:
-        # สร้าง task
-        result = self.create_file_task(file_path, machine, is_pcap)
-
-        if result.get("status") == "error":
-            return result
-
-        task_id = result.get("task_id")
-
-        if not task_id:
-            return {"status": "error", "error": "No task ID returned"}
-
-        # ถ้าไม่รอ ก็ return task_id ไปเลย
-        if not wait:
-            return {"status": "submitted", "task_id": task_id}
-
-        # รอให้วิเคราะห์เสร็จ
-        print(f"Waiting for task {task_id} to complete...")
-        success = self.wait_for_task(task_id, timeout=timeout)
-
-        if not success:
-            return {"status": "timeout", "task_id": task_id}
-
-        # ดึงรายงาน
-        if get_filtered_report:
-            report = self.filter_report_for_llm(task_id)
-        else:
-            report = self.get_task_report(task_id)
-
-        return {
-            "status": "completed",
-            "task_id": task_id,
-            "report": report
-        }
-
-
-# ตัวอย่างการใช้งาน
-# สร้าง instance
 cape = CAPEAnalyzer()
 file_path = "AnyDesk.exe"
-# หรือถ้ามี API Token
-# cape = CAPEAnalyzer(api_token="YOUR_TOKEN_HERE")
 
 # ตัวอย่างที่ 1: เช็คว่าไฟล์เคยถูกวิเคราะห์แล้วหรือไม่
-# print("=== 1: Check if file exists ===")
 # task_id = cape.cheack_analyer(file_path)
 # print(task_id)
 
@@ -285,27 +373,7 @@ print('*'*100)
 if not status_task.get("error") and status_task.get("data"): 
     if task_id:
         report = cape.get_report(task_id.get("id"))
-        print(f"Report: {report}")
-        # with open("cape_report.json",'w',encoding="utf-8") as wf:
-        #     report_str = json.dumps(report["defult"], ensure_ascii=False, indent=4)
-        #     wf.write(report_str)
-        #     wf.close()
-
-# # ตัวอย่างที่ 5: วิเคราะห์ไฟล์แบบครบวงจร (แนะนำ!)
-# print("\n=== Example 5: Complete analysis ===")
-# full_result = cape.analyze_file_complete(
-#     file_path="malware_sample.exe",
-#     wait=True,
-#     timeout=600,
-#     get_filtered_report=True
-# )
-# print(f"Complete result: {full_result}")
-
-# # ตัวอย่างที่ 6: วิเคราะห์ PCAP file
-# print("\n=== Example 6: Analyze PCAP file ===")
-# pcap_result = cape.analyze_file_complete(
-#     file_path="network_traffic.pcap",
-#     is_pcap=True,
-#     wait=True
-# )
-# print(f"PCAP result: {pcap_result}")
+        with open("cape_report.json",'w',encoding="utf-8") as wf:
+            report_str = json.dumps(report, ensure_ascii=False, indent=4)
+            wf.write(report_str)
+            wf.close()
