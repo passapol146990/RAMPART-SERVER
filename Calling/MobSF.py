@@ -44,12 +44,6 @@ class MobSFCall:
             raise Exception(f"Request failed: {str(e)}")
 
     def scan_uploaded_file(self, file_hash, re_scan=0):
-        """
-        Scan a file that is already uploaded
-        Args:
-            file_hash: hash of the uploaded file
-            re_scan: 0 or 1, default is 0
-        """
         url = f"{self.base_url}/api/v1/scan"
         headers = self._get_headers()
         data = {
@@ -91,13 +85,6 @@ class MobSFCall:
             raise Exception(f"Request failed: {str(e)}")
 
     def scan_file(self, file_path, original_filename=None, re_scan=0):
-        """
-        Complete workflow: Upload -> Scan -> Get Report
-        Args:
-            file_path: path to the file to scan
-            original_filename: original filename with extension
-            re_scan: 0 or 1, default is 0
-        """
         print(f"Uploading file: {file_path}")
         upload_result = self.upload_file(file_path, original_filename)
 
@@ -114,11 +101,9 @@ class MobSFCall:
         print(f"Report generated successfully!")
         return report
 
-
-
-Mobsf = None
+mob = None
 def MobSF():
-    global Mobsf
-    if Mobsf is None:
-        Mobsf = MobSFCall()
-    return Mobsf
+    global mob
+    if mob is None:
+        mob = MobSFCall()
+    return mob

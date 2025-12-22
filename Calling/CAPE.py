@@ -345,35 +345,40 @@ class CAPEAnalyzer:
             "data": filtered_data
         }
 
-cape = CAPEAnalyzer()
-file_path = "AnyDesk.exe"
+cape = None
+def CAPE():
+    global cape
+    if cape is None:
+        cape = CAPEAnalyzer()
+    return cape
+# file_path = "AnyDesk.exe"
 
 # ตัวอย่างที่ 1: เช็คว่าไฟล์เคยถูกวิเคราะห์แล้วหรือไม่
 # task_id = cape.cheack_analyer(file_path)
 # print(task_id)
 
 # ตัวอย่างที่ 2: ส่งไฟล์เข้าวิเคราะห์
-print('*'*100)
-result = cape.create_file_task(file_path)
-print(result)
+# print('*'*100)
+# result = cape.create_file_task(file_path)
+# print(result)
 
-# ตัวอย่างที่ 3: เช็คสถานะของ task
-status_task = {
-    "data":None,
-    "error":False
-}
+# # ตัวอย่างที่ 3: เช็คสถานะของ task
+# status_task = {
+#     "data":None,
+#     "error":False
+# }
 
-task_id = result.get("task_id")
-if task_id:
-    status_task = cape.get_task_status(task_id.get("id"))
-    print(f"Status: {status_task}")
+# task_id = result.get("task_id")
+# if task_id:
+#     status_task = cape.get_task_status(task_id.get("id"))
+#     print(f"Status: {status_task}")
 
-# ตัวอย่างที่ 4: ดึงรายงานแบบ filtered สำหรับ LLM
-print('*'*100)
-if not status_task.get("error") and status_task.get("data"): 
-    if task_id:
-        report = cape.get_report(task_id.get("id"))
-        with open("cape_report.json",'w',encoding="utf-8") as wf:
-            report_str = json.dumps(report, ensure_ascii=False, indent=4)
-            wf.write(report_str)
-            wf.close()
+# # ตัวอย่างที่ 4: ดึงรายงานแบบ filtered สำหรับ LLM
+# print('*'*100)
+# if not status_task.get("error") and status_task.get("data"): 
+#     if task_id:
+#         report = cape.get_report(task_id.get("id"))
+#         with open("cape_report.json",'w',encoding="utf-8") as wf:
+#             report_str = json.dumps(report, ensure_ascii=False, indent=4)
+#             wf.write(report_str)
+#             wf.close()
