@@ -6,12 +6,16 @@ import aiofiles
 import hashlib
 from pathlib import Path
 from dotenv import load_dotenv
+import json
+from datetime import datetime
 
 load_dotenv()
 
 from bgProcessing.tasks import analyze_malware_task
 from celery.result import AsyncResult
 from bgProcessing.celery_app import celery_app
+
+from db.redis import redis_client
 
 app = FastAPI(
     title="RAMPART-AI",
@@ -62,13 +66,49 @@ def calculate_hash_from_chunks(chunks_data):
         sha256_hash.update(chunk)
     return sha256_hash.hexdigest()
 
-def find_existing_file_by_hash(sha256_hash, file_extension):
-    """ค้นหาไฟล์ที่มี hash ตรงกันใน upload directory"""
-    # ใช้ hash เป็นชื่อไฟล์ - เร็วกว่าการวนลูปหาทุกไฟล์
-    expected_file = UPLOAD_DIR / f"{sha256_hash}{file_extension}"
-    if expected_file.exists() and expected_file.is_file():
-        return expected_file
-    return None
+def get_file_info_from_redis(sha256_hash):
+    """ดึงข้อมูลไฟล์จาก Redis โดยใช้ SHA256 hash เป็น key"""
+    try:
+        redis_key = f"file:{sha256_hash}"
+        file_data = redis_client.hgetall(redis_key)
+
+        if file_data:
+            return {
+                'path': file_data.get('path'),
+                'original_filename': file_data.get('original_filename'),
+                'md5': file_data.get('md5'),
+                'sha1': file_data.get('sha1'),
+                'sha256': file_data.get('sha256'),
+                'file_size': int(file_data.get('file_size', 0)),
+                'upload_time': file_data.get('upload_time'),
+                'file_extension': file_data.get('file_extension')
+            }
+        return None
+    except Exception as e:
+        print(f"Redis error when getting file info: {e}")
+        return None
+
+def save_file_info_to_redis(sha256_hash, file_path, original_filename, file_hashes, file_size, file_extension):
+    """บันทึกข้อมูลไฟล์ลง Redis โดยใช้ SHA256 hash เป็น key"""
+    try:
+        redis_key = f"file:{sha256_hash}"
+        upload_time = datetime.now().isoformat()
+
+        redis_client.hset(redis_key, mapping={
+            'path': str(file_path),
+            'original_filename': original_filename,
+            'md5': file_hashes['md5'],
+            'sha1': file_hashes['sha1'],
+            'sha256': file_hashes['sha256'],
+            'file_size': file_size,
+            'upload_time': upload_time,
+            'file_extension': file_extension
+        })
+
+        return True
+    except Exception as e:
+        print(f"Redis error when saving file info: {e}")
+        return False
 
 def determine_analysis_tool(file_extension):
     """กำหนดเครื่องมือที่จะใช้วิเคราะห์ตาม extension"""
@@ -133,6 +173,7 @@ async def uploadFile(
 
     # try:
     file_extension = os.path.splitext(file.filename)[1]
+    original_filename = file.filename
 
     chunks = []
     total_size = 0
@@ -151,32 +192,67 @@ async def uploadFile(
     # คำนวณ hash จาก chunks
     sha256_hash = calculate_hash_from_chunks(chunks)
 
-    file_id = sha256_hash
-    file_path = UPLOAD_DIR / f"{file_id}{file_extension}"
+    # ตรวจสอบว่ามีไฟล์ซ้ำจาก Redis
+    existing_file_info = get_file_info_from_redis(sha256_hash)
 
-    # ตรวจสอบว่ามีไฟล์เดิมอยู่แล้วหรือไม่
-    if file_path.exists():
+    if existing_file_info:
+        # ไฟล์เคยอัปโหลดแล้ว ใช้ไฟล์เดิม
         file_already_exists = True
+        file_path = Path(existing_file_info['path'])
+        file_hashes = {
+            'md5': existing_file_info['md5'],
+            'sha1': existing_file_info['sha1'],
+            'sha256': existing_file_info['sha256']
+        }
+        total_size = existing_file_info['file_size']
+
+        # ตรวจสอบว่าไฟล์ยังอยู่ในระบบไฟล์หรือไม่
+        if not file_path.exists():
+            # ไฟล์หายไปจากระบบ ให้อัปโหลดใหม่
+            file_path = UPLOAD_DIR / original_filename
+            async with aiofiles.open(file_path, 'wb') as f:
+                for chunk in chunks:
+                    await f.write(chunk)
+            file_already_exists = False
+
+            # คำนวณ hash ใหม่เพื่อยืนยัน
+            file_hashes = calculate_file_hashes(file_path)
+
+            # อัปเดต path ใหม่ใน Redis
+            save_file_info_to_redis(sha256_hash, file_path, original_filename, file_hashes, total_size, file_extension)
     else:
+        # ไฟล์ใหม่ บันทึกด้วยชื่อเดิม
+        file_path = UPLOAD_DIR / original_filename
+
+        # ถ้ามีไฟล์ชื่อซ้ำในโฟลเดอร์ ให้เพิ่ม timestamp
+        if file_path.exists():
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename_without_ext = os.path.splitext(original_filename)[0]
+            file_path = UPLOAD_DIR / f"{filename_without_ext}_{timestamp}{file_extension}"
+
         async with aiofiles.open(file_path, 'wb') as f:
             for chunk in chunks:
                 await f.write(chunk)
+
         file_already_exists = False
 
-    # คำนวณ hash ของไฟล์ (ทั้ง MD5, SHA1, SHA256)
-    file_hashes = calculate_file_hashes(file_path)
+        # คำนวณ hash ของไฟล์ (ทั้ง MD5, SHA1, SHA256)
+        file_hashes = calculate_file_hashes(file_path)
+
+        # บันทึกข้อมูลไฟล์ลง Redis
+        save_file_info_to_redis(sha256_hash, file_path, original_filename, file_hashes, total_size, file_extension)
 
     # กำหนดเครื่องมือที่จะใช้วิเคราะห์
     analysis_tool = determine_analysis_tool(file_extension)
 
     if analysis_tool == 'unsupported':
-        if file_path.exists():
+        if file_path.exists() and not file_already_exists:
             os.remove(file_path)
         raise HTTPException(
             status_code=400,
             detail=f"Unsupported file type: {file_extension}. Supported types: {MOBSF_SUPPORTED_EXTENSIONS + CAPE_SUPPORTED_EXTENSIONS}"
         )
-    
+
     # สร้าง Task Queue สำหรับวิเคราะห์ไฟล์แบบ Background
     tools = []
     if total_size <= VIRUSTOTAL_MAX_SIZE:
@@ -188,8 +264,8 @@ async def uploadFile(
 
     return {
         "success": True,
-        "file_id": file_id,
-        "filename": file.filename,
+        "file_id": sha256_hash,  # ใช้ SHA256 เป็น file_id
+        "filename": original_filename,
         "file_path": str(file_path),
         "file_size": total_size,
         "file_extension": file_extension,
