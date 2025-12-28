@@ -1,6 +1,7 @@
 from Calling.GeminiAPI import GeminiAPI
 # import os
 import json
+from utils.clearn_report import clean_mobsf_report
 
 # json_files = [f for f in os.listdir(folder) if f.endswith(".json")]
 # file = json_files[1]
@@ -15,18 +16,18 @@ def LLM(file):
         "mobsf": None,
         "cape_sandbox": None
     }
-    with open(f"./Files/report/mobsf/re/{file}", 'r', encoding="utf-8") as rf:
+    with open(f"{file}", 'r', encoding="utf-8") as rf:
         jsonf = json.loads(rf.read())
         print(f"Mosb Report : {jsonf}")
         print('*'*100)
-        user_selected_report["mobsf"] = json.dumps(jsonf)
+        user_selected_report["mobsf"] = json.dumps(clean_mobsf_report(jsonf))
         rf.close()
-    with open(f"./Files/report/virustotal/re/{file}", 'r', encoding="utf-8") as rf:
-        jsonf = json.loads(rf.read())
-        print(f"VirusTotal Report : {jsonf}")
-        print('*'*100)
-        user_selected_report["virustotal"] = json.dumps(jsonf)
-        rf.close()
+    # with open(f"{file}", 'r', encoding="utf-8") as rf:
+    #     jsonf = json.loads(rf.read())
+    #     print(f"VirusTotal Report : {jsonf}")
+    #     print('*'*100)
+    #     user_selected_report["virustotal"] = json.dumps(jsonf)
+    #     rf.close()
 
 
     response = GeminiAPI().AnalysisGemini(user_selected_report)
@@ -52,15 +53,8 @@ def LLM(file):
     except Exception as e:
         print(f"Error : {e}")
 
-
-
-fileName = [
-    'Calculator_9.0 (827797324)_APKPure.json',
-    'm_03DDC5600DB5215BC57DCA2BF3E84C897CBDD0971AC4C9D14669C5C6F4372F59.json',
-    'm_0162C137C2618B9B6E28D5B1748A5392FF930C876099798AE8826318CF34F142.json'
-]
-
-# LLM(fileName[2])
+fileName = "Killer Sudoku-mob.json"
+LLM(fileName)
 
 
 
