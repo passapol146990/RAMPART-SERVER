@@ -2,9 +2,10 @@ import os
 import requests
 from dotenv import load_dotenv
 import base64
-import hashlib
-from typing import Dict, Any, List, Optional
 import json
+# import hashlib
+from typing import Dict, Any, List, Optional
+# import json
 
 def deCode_base64_string(b64_string: str) -> str:
     b64_bytes = b64_string.encode("utf-8")
@@ -246,6 +247,9 @@ class VirusToTalAPI:
 
         try:
             raw_report = self._make_request("GET", url)
+            with open('z-report1-vt.json','w',encoding='utf-8') as wf:
+                wf.write(json.dumps(raw_report,ensure_ascii=False, indent=4))
+                wf.close()
             data = self._clean_virustotal_report(raw_report) if clean else raw_report
             return {"success":True, "data":data}
         except Exception as e:
@@ -257,6 +261,9 @@ class VirusToTalAPI:
 
         try:
             raw_report = self._make_request("GET", url)
+            with open('z-report1-vt.json','w',encoding='utf-8') as wf:
+                wf.write(json.dumps(raw_report,ensure_ascii=False, indent=4))
+                wf.close()
             data =  self._clean_virustotal_report(raw_report) if clean else raw_report
             return {"success":True, "data":data}
         except Exception as e:

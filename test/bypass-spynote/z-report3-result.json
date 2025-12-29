@@ -1,0 +1,198 @@
+{
+    "virustotal": {
+        "file_info": {
+            "names": [
+                "4ff07276c35f5e9c6f8ec37deaa0bc4f01f033a4e717ef8ce76ef371e8eee29b.apk",
+                "ready.apk"
+            ],
+            "meaningful_name": "4ff07276c35f5e9c6f8ec37deaa0bc4f01f033a4e717ef8ce76ef371e8eee29b.apk",
+            "type": "Android",
+            "size": 5652822,
+            "hashes": {
+                "md5": "f1d868095e4c4a6dcd82c97ec4e0061a",
+                "sha1": "5d33d3ce7fe6ae0d236c314614d23ae21a041ce0",
+                "sha256": "4ff07276c35f5e9c6f8ec37deaa0bc4f01f033a4e717ef8ce76ef371e8eee29b"
+            }
+        },
+        "app_identity": {
+            "package_name": "adoption.di.digest",
+            "developer_signer": "Android",
+            "is_verified": null,
+            "is_trusted_developer": false
+        },
+        "scan_summary": {
+            "malicious_count": 26,
+            "suspicious_count": 0,
+            "undetected_count": 40,
+            "harmless_count": 0,
+            "total_scanners": 76,
+            "reputation": -13,
+            "community_votes": {
+                "harmless": 0,
+                "malicious": 3
+            }
+        },
+        "threats_found": {
+            "malicious": [
+                "Lionic: Trojan.AndroidOS.SpyMax.C!c",
+                "CTX: apk.trojan.spymax",
+                "K7GW: Trojan ( 005a5d9c1 )",
+                "SymantecMobileInsight: Spyware:MobileSpy",
+                "Symantec: Trojan.Gen.NPE",
+                "ESET-NOD32: Android/Spy.SpyMax.T trojan",
+                "Cynet: Malicious (score: 99)",
+                "Kaspersky: HEUR:Trojan-Banker.AndroidOS.Agent.ws",
+                "Alibaba: TrojanBanker:Android/Spynote.ec573a54",
+                "Rising: Spyware.Agent/Android!1.F364 (CLASSIC)",
+                "Sophos: Andr/Xgen2-AOO",
+                "F-Secure: Malware.ANDROID/SpyMax.FHPV.Gen",
+                "DrWeb: Android.SpyMax.48.origin",
+                "Ikarus: Trojan-Spy.AndroidOS.Spymax",
+                "Google: Detected",
+                "Avira: ANDROID/SpyMax.FHPV.Gen",
+                "Gridinsoft: Trojan.U.Gen.tr",
+                "ZoneAlarm: Andr/SpyNote-C",
+                "Avast-Mobile: Android:Evo-gen [Trj]",
+                "Varist: AndroidOS/Agent.GWM.gen!Eldorado",
+                "BitDefenderFalx: Android.Trojan.SpyAgent.LZ",
+                "AhnLab-V3: Trojan/Android.SpyAgent.1180883",
+                "Tencent: a.privacy.scrcontrol.b",
+                "TrellixENS: Artemis!F1D868095E4C",
+                "huorong: TrojanSpy/Android.SpyMax.e",
+                "Fortinet: Android/SpyMax.E!tr"
+            ],
+            "suspicious": []
+        },
+        "security_analysis": {
+            "sigma_rules": {},
+            "sandbox_results": []
+        },
+        "permissions": [
+            "android.permission.REQUEST_DELETE_PACKAGES",
+            "android.permission.DISABLE_KEYGUARD",
+            "oplus.permission.OPLUS_COMPONENT_SAFE",
+            "android.permission.USE_FULL_SCREEN_INTENT",
+            "oppo.permission.OPPO_COMPONENT_SAFE",
+            "android.permission.ACCESS_COARSE_LOCATION",
+            "android.permission.CAMERA",
+            "android.permission.INTERNET",
+            "com.huawei.permission.external_app_settings.USE_COMPONENT",
+            "android.permission.ACCESS_FINE_LOCATION",
+            "android.permission.SEND_SMS",
+            "android.permission.ACCESS_NETWORK_STATE",
+            "android.permission.SET_WALLPAPER",
+            "android.permission.READ_CALL_LOG",
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            "android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",
+            "android.permission.READ_EXTERNAL_STORAGE",
+            "android.permission.RECEIVE_BOOT_COMPLETED",
+            "com.android.alarm.permission.SET_ALARM",
+            "android.permission.CALL_PHONE",
+            "android.permission.READ_PHONE_STATE",
+            "android.permission.FOREGROUND_SERVICE",
+            "android.permission.READ_SMS",
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            "android.permission.WAKE_LOCK",
+            "android.permission.ACCESS_WIFI_STATE",
+            "android.permission.REQUEST_INSTALL_PACKAGES",
+            "android.permission.CHANGE_WIFI_STATE",
+            "android.permission.RECORD_AUDIO",
+            "android.permission.READ_CONTACTS",
+            "android.permission.GET_ACCOUNTS"
+        ],
+        "tags": [
+            "apk",
+            "android"
+        ]
+    },
+    "mobsf_report": {
+        "file_info": {
+            "app_name": "Filterbypass",
+            "package_name": "adoption.di.digest",
+            "version_name": "1.0.0.0",
+            "size": "5.39MB",
+            "md5": "f1d868095e4c4a6dcd82c97ec4e0061a"
+        },
+        "security_score": 46,
+        "signer_info": {
+            "raw_data": "Binary is signed\nv1 signature: True\nv2 signature: True\nv3 signature: True\nv4 signature: False\nX.509 Subject: C=US, ST=California, L=Mountain View, O=Android, OU=Android, CN=Android, E=android@android.com\nSignature Algorithm: rsassa_pkcs1v15\nValid From: 2008-04-15 23:40:57+00:00\nValid To: 2035-09-01 23:40:57+00:00\nIssuer: C=US, ST=California, L=Mountain View, O=Android, OU=Android, CN=Android, E=android@android.com\nSerial Number: 0xf2b98e6123572c4e\nHash Algorithm: md5\nmd5: 1900bbfba756edd34190225",
+            "is_debug_cert": true,
+            "bad_certificate": false
+        },
+        "permissions": [
+            {
+                "name": "android.permission.SEND_SMS",
+                "description": "Allows application to send SMS messages. Malicious applications may cost you money by sending messages without your confirmation."
+            },
+            {
+                "name": "android.permission.READ_SMS",
+                "description": "Allows application to read SMS messages stored on your phone or SIM card. Malicious applications may read your confidential messages."
+            },
+            {
+                "name": "android.permission.READ_CALL_LOG",
+                "description": "Allows an application to read the user's call log."
+            },
+            {
+                "name": "android.permission.READ_CONTACTS",
+                "description": "Allows an application to read all of the contact (address) data stored on your phone. Malicious applications can use this to send your data to other people."
+            },
+            {
+                "name": "android.permission.GET_ACCOUNTS",
+                "description": "Allows access to the list of accounts in the Accounts Service."
+            },
+            {
+                "name": "android.permission.CAMERA",
+                "description": "Allows application to take pictures and videos with the camera. This allows the application to collect images that the camera is seeing at any time."
+            },
+            {
+                "name": "android.permission.RECORD_AUDIO",
+                "description": "Allows application to access the audio record path."
+            },
+            {
+                "name": "android.permission.ACCESS_COARSE_LOCATION",
+                "description": "Access coarse location sources, such as the mobile network database, to determine an approximate phone location, where available. Malicious applications can use this to determine approximately where you are."
+            },
+            {
+                "name": "android.permission.ACCESS_FINE_LOCATION",
+                "description": "Access fine location sources, such as the Global Positioning System on the phone, where available. Malicious applications can use this to determine where you are and may consume additional battery power."
+            },
+            {
+                "name": "android.permission.CALL_PHONE",
+                "description": "Allows the application to call phone numbers without your intervention. Malicious applications may cause unexpected calls on your phone bill. Note that this does not allow the application to call emergency numbers."
+            },
+            {
+                "name": "android.permission.READ_EXTERNAL_STORAGE",
+                "description": "Allows an application to read from external storage."
+            },
+            {
+                "name": "android.permission.WRITE_EXTERNAL_STORAGE",
+                "description": "Allows an application to write to external storage."
+            },
+            {
+                "name": "android.permission.SYSTEM_ALERT_WINDOW",
+                "description": "Allows an application to show system-alert windows. Malicious applications can take over the entire screen of the phone."
+            },
+            {
+                "name": "android.permission.READ_PHONE_STATE",
+                "description": "Allows the application to access the phone features of the device. An application with this permission can determine the phone number and serial number of this phone, whether a call is active, the number that call is connected to and so on."
+            },
+            {
+                "name": "android.permission.REQUEST_INSTALL_PACKAGES",
+                "description": "Malicious applications can use this to try and trick users into installing additional malicious packages."
+            }
+        ],
+        "dangerous_services": [],
+        "suspicious_api_calls": [],
+        "high_risk_components": [],
+        "store_info": null,
+        "network_security": {
+            "summary": {
+                "high": 0,
+                "warning": 0,
+                "secure": 0
+            },
+            "configured_domains": [],
+            "vulnerabilities": []
+        }
+    }
+}

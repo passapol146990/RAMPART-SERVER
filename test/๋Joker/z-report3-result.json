@@ -1,0 +1,172 @@
+{
+    "virustotal": {
+        "file_info": {
+            "names": [
+                "Cool+HD+Camera_1.1.7.xapk"
+            ],
+            "meaningful_name": "Cool+HD+Camera_1.1.7.xapk",
+            "type": "Android",
+            "size": 36737026,
+            "hashes": {
+                "md5": "ba14e7c4dca182644795cbfe4d49db95",
+                "sha1": "339c727ee52c3f870f437af023b7eff2cfe470bd",
+                "sha256": "a8750d9befb27518f9c4dfe283a67aa4d7524d9ef9fea36835ebef1d7390dbad"
+            }
+        },
+        "app_identity": {
+            "package_name": null,
+            "developer_signer": null,
+            "is_verified": null,
+            "is_trusted_developer": false
+        },
+        "scan_summary": {
+            "malicious_count": 0,
+            "suspicious_count": 0,
+            "undetected_count": 60,
+            "harmless_count": 0,
+            "total_scanners": 76,
+            "reputation": 0,
+            "community_votes": {
+                "harmless": 0,
+                "malicious": 0
+            }
+        },
+        "threats_found": {
+            "malicious": [],
+            "suspicious": []
+        },
+        "security_analysis": {
+            "sigma_rules": {},
+            "sandbox_results": []
+        },
+        "permissions": [],
+        "tags": [
+            "android",
+            "apk"
+        ]
+    },
+    "mobsf_report": {
+        "file_info": {
+            "app_name": "Cool HD Camera",
+            "package_name": "com.camera.veto.exemplar",
+            "version_name": "1.1.7",
+            "size": "25.24MB",
+            "md5": "ba14e7c4dca182644795cbfe4d49db95"
+        },
+        "security_score": 54,
+        "code_behavior": {
+            "suspicious_apis": [
+                {
+                    "type": "api_dexloading",
+                    "description": "Dynamic Class and Dexloading",
+                    "file_count": 5
+                },
+                {
+                    "type": "api_native_code",
+                    "description": "Loading Native Code (Shared Library)",
+                    "file_count": 8
+                },
+                {
+                    "type": "api_base64_decode",
+                    "description": "Base64 Decode",
+                    "file_count": 14
+                },
+                {
+                    "type": "api_sms_call",
+                    "description": "Query Database of SMS, Contacts etc",
+                    "file_count": 6
+                }
+            ],
+            "risk_findings": [
+                {
+                    "rule_id": "android_read_write_external",
+                    "title": "android_read_write_external",
+                    "severity": "warning"
+                },
+                {
+                    "rule_id": "android_insecure_random",
+                    "title": "android_insecure_random",
+                    "severity": "warning"
+                },
+                {
+                    "rule_id": "android_temp_file",
+                    "title": "android_temp_file",
+                    "severity": "warning"
+                },
+                {
+                    "rule_id": "android_ip_disclosure",
+                    "title": "android_ip_disclosure",
+                    "severity": "warning"
+                },
+                {
+                    "rule_id": "android_sql_raw_query",
+                    "title": "android_sql_raw_query",
+                    "severity": "warning"
+                },
+                {
+                    "rule_id": "android_hardcoded",
+                    "title": "android_hardcoded",
+                    "severity": "warning"
+                },
+                {
+                    "rule_id": "android_md5",
+                    "title": "android_md5",
+                    "severity": "warning"
+                },
+                {
+                    "rule_id": "android_sha1",
+                    "title": "android_sha1",
+                    "severity": "warning"
+                }
+            ]
+        },
+        "signer_info": {
+            "raw_data": "Binary is signed\nv1 signature: False\nv2 signature: True\nv3 signature: True\nv4 signature: False\nX.509 Subject: C=US, ST=California, L=Mountain View, O=Google Inc., OU=Android, CN=Android\nSignature Algorithm: rsassa_pkcs1v15\nValid From: 2025-12-24 07:53:50+00:00\nValid To: 2055-12-24 07:53:50+00:00\nIssuer: C=US, ST=California, L=Mountain View, O=Google Inc., OU=Android, CN=Android\nSerial Number: 0x1e325d6bd3ed6a19727b99471083a15a957669d1\nHash Algorithm: sha256\nmd5: 3d381b522beacb54738f9dcd8a369450\n",
+            "is_debug_cert": true,
+            "bad_certificate": false
+        },
+        "permissions": [
+            {
+                "name": "android.permission.READ_EXTERNAL_STORAGE",
+                "description": "Allows an application to read from external storage."
+            },
+            {
+                "name": "android.permission.READ_MEDIA_IMAGES",
+                "description": "Allows an application to read image files from external storage."
+            },
+            {
+                "name": "android.permission.READ_MEDIA_VIDEO",
+                "description": "Allows an application to read video files from external storage."
+            },
+            {
+                "name": "android.permission.WRITE_EXTERNAL_STORAGE",
+                "description": "Allows an application to write to external storage."
+            },
+            {
+                "name": "android.permission.RECORD_AUDIO",
+                "description": "Allows application to access the audio record path."
+            },
+            {
+                "name": "android.permission.CAMERA",
+                "description": "Allows application to take pictures and videos with the camera. This allows the application to collect images that the camera is seeing at any time."
+            },
+            {
+                "name": "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+                "description": "Allows an application to read image or video files from external storage that a user has selected via the permission prompt photo picker. Apps can check this permission to verify that a user has decided to use the photo picker, instead of granting access to READ_MEDIA_IMAGES or READ_MEDIA_VIDEO . It does not prevent apps from accessing the standard photo picker manually. This permission should be requested alongside READ_MEDIA_IMAGES and/or READ_MEDIA_VIDEO , depending on which type of media is desired."
+            }
+        ],
+        "dangerous_services": [],
+        "suspicious_api_calls": [],
+        "high_risk_components": [],
+        "store_info": null,
+        "network_security": {
+            "summary": {
+                "high": 0,
+                "warning": 0,
+                "secure": 0
+            },
+            "configured_domains": [],
+            "vulnerabilities": []
+        }
+    }
+}

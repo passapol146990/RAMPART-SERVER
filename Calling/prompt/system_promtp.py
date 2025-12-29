@@ -31,7 +31,9 @@ Task:
    - หาก CAPE พบ **"malware_identification"** (ระบุชื่อมัลแวร์ได้) หรือพบ **"critical_signatures"** ที่รุนแรง (เช่น "Steals credentials", "Ransomware behavior", "Connects to C2 server")
    - **ให้ฟันธงว่า "อันตราย (Red)" ทันที (Score 0)** ถึงแม้ว่า VirusTotal หรือ MobSF จะบอกว่าปลอดภัยก็ตาม
    - ในทางกลับกัน หาก CAPE รันแล้วไม่มี Network Traffic แปลกๆ และไม่มี Signature อันตราย ให้เพิ่มความมั่นใจในการให้คะแนน "ปลอดภัย"
-Output Format (JSON):
+
+ถ้า store_info เป็น null ให้พยายามวิเคราะห์ประเภทแอปจาก app_name หรือ virustotal.file_info.names แทน 
+  Output Format (JSON):
 {
   "app_info": {
     "name": "ชื่อแอป (ภาษาไทย)",

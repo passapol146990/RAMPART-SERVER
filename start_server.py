@@ -253,14 +253,8 @@ async def uploadFile(
             detail=f"Unsupported file type: {file_extension}. Supported types: {MOBSF_SUPPORTED_EXTENSIONS + CAPE_SUPPORTED_EXTENSIONS}"
         )
 
-    # สร้าง Task Queue สำหรับวิเคราะห์ไฟล์แบบ Background
-    tools = []
-    if total_size <= VIRUSTOTAL_MAX_SIZE:
-        tools.append("virustotal")
-    tools.append(analysis_tool)
-
     # ส่ง task ไป Celery (ทำงานแบบ async ใน background)
-    task = analyze_malware_task.delay(str(file_path), file_hashes, tools)
+    task = analyze_malware_task.delay(str(file_path), file_hashes, total_size, analysis_tool)
 
     return {
         "success": True,

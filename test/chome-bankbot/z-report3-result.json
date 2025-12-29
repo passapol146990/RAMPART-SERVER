@@ -1,0 +1,148 @@
+{
+    "virustotal": {
+        "file_info": {
+            "names": [
+                "e4acebbaf1008ad281cd36a9b49d7b549db310267df7ddd69e4aa82b967eb4ca.apk",
+                "yc64jn9x.exe",
+                "Chrome.apk"
+            ],
+            "meaningful_name": "e4acebbaf1008ad281cd36a9b49d7b549db310267df7ddd69e4aa82b967eb4ca.apk",
+            "type": "Android",
+            "size": 1256192,
+            "hashes": {
+                "md5": "c0612f3dca8fa12288dcf97ed2efeffe",
+                "sha1": "4a93c6a54fb47a4c097df7f68365e00f16a0d537",
+                "sha256": "e4acebbaf1008ad281cd36a9b49d7b549db310267df7ddd69e4aa82b967eb4ca"
+            }
+        },
+        "app_identity": {
+            "package_name": "p58nnnk6.g1yzgjjs.owr0gy",
+            "developer_signer": "np",
+            "is_verified": null,
+            "is_trusted_developer": false
+        },
+        "scan_summary": {
+            "malicious_count": 24,
+            "suspicious_count": 0,
+            "undetected_count": 43,
+            "harmless_count": 0,
+            "total_scanners": 76,
+            "reputation": 0,
+            "community_votes": {
+                "harmless": 0,
+                "malicious": 0
+            }
+        },
+        "threats_found": {
+            "malicious": [
+                "Lionic: Trojan.AndroidOS.Banker.C!c",
+                "CTX: apk.trojan.banker",
+                "K7GW: Trojan ( 0054e2971 )",
+                "SymantecMobileInsight: AppRisk:Generisk",
+                "Symantec: Trojan.Gen.NPE",
+                "ESET-NOD32: Android/TrojanDropper.Agent.LPD trojan",
+                "Cynet: Malicious (score: 99)",
+                "Kaspersky: HEUR:Trojan-Dropper.AndroidOS.Banker.d",
+                "Alibaba: TrojanDropper:Android/Banker.ba83d9df",
+                "Tencent: a.privacy.BankBotSteal",
+                "Sophos: Android Packed App (PUA)",
+                "F-Secure: Trojan:Android/Corrupted.BC",
+                "DrWeb: Android.Packed.24.origin",
+                "Varist: ABPWS.JOPB-91",
+                "Avira: ANDROID/Bankbot.FRRG.Gen",
+                "Kingsoft: Android.Troj.Unknown.a",
+                "Avast-Mobile: Android:Evo-gen [Trj]",
+                "Google: Detected",
+                "BitDefenderFalx: Android.Trojan.Banker.AIB",
+                "AhnLab-V3: Trojan/Android.Banker.1222754",
+                "Rising: Dropper.Banker/Android!8.11BCE (CLOUD)",
+                "TrellixENS: Artemis!C0612F3DCA8F",
+                "Ikarus: Trojan-Dropper.AndroidOS.Agent",
+                "Fortinet: Android/Agent.LPD!tr"
+            ],
+            "suspicious": []
+        },
+        "security_analysis": {
+            "sigma_rules": {},
+            "sandbox_results": [
+                {
+                    "sandbox": "Zenbox android",
+                    "category": "harmless",
+                    "malware_classification": [
+                        "CLEAN"
+                    ]
+                }
+            ]
+        },
+        "permissions": [
+            "android.permission.REQUEST_DELETE_PACKAGES",
+            "android.permission.DISABLE_KEYGUARD",
+            "android.permission.QUICKBOOT_POWERON",
+            "android.permission.ACCESS_COARSE_LOCATION",
+            "android.permission.QUERY_ALL_PACKAGES",
+            "android.permission.CAMERA",
+            "android.permission.INTERNET",
+            "android.permission.WRITE_CONTACTS",
+            "android.permission.WRITE_CLIPS",
+            "android.permission.ACTION_MANAGE_OVERLAY_PERMISSION",
+            "android.permission.READ_CLIPS",
+            "android.permission.ACCESS_NETWORK_STATE",
+            "android.permission.GET_TASKS",
+            "android.permission.READ_CALL_LOG",
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            "android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",
+            "android.permission.READ_PHONE_NUMBERS",
+            "android.permission.READ_EXTERNAL_STORAGE",
+            "android.permission.RECEIVE_BOOT_COMPLETED",
+            "android.permission.SEND_SMS",
+            "android.permission.CALL_PHONE",
+            "android.permission.READ_PHONE_STATE",
+            "android.permission.FOREGROUND_SERVICE",
+            "android.permission.GET_CLIPS",
+            "android.permission.READ_SMS",
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            "android.permission.ACCESS_WIFI_STATE",
+            "android.permission.WAKE_LOCK",
+            "android.permission.RECEIVE_LAUNCH_BROADCASTS",
+            "android.permission.RECEIVE_SMS",
+            "android.permission.READ_CONTACTS",
+            "android.permission.MODIFY_AUDIO_SETTINGS",
+            "android.permission.GET_ACCOUNTS"
+        ],
+        "tags": [
+            "android",
+            "obfuscated",
+            "reflection",
+            "apk"
+        ]
+    },
+    "mobsf_report": {
+        "file_info": {
+            "app_name": "Chrome",
+            "package_name": "p58nnnk6.g1yzgjjs.owr0gy",
+            "version_name": "",
+            "size": "1.2MB",
+            "md5": "c0612f3dca8fa12288dcf97ed2efeffe"
+        },
+        "security_score": 51,
+        "signer_info": {
+            "raw_data": "Binary is signed\nv1 signature: True\nv2 signature: True\nv3 signature: False\nv4 signature: None\nX.509 Subject: C=中国, ST=江苏, L=南京, O=np, OU=np, CN=np\nSignature Algorithm: rsassa_pkcs1v15\nValid From: 2021-04-25 09:03:56+00:00\nValid To: 3020-08-26 09:03:56+00:00\nIssuer: C=中国, ST=江苏, L=南京, O=np, OU=np, CN=np\nSerial Number: 0x45ff9a3\nHash Algorithm: sha512\nmd5: 68170b6b26e52338bc07ae665303cc36\nsha1: 26b02d233509f4aecf56980032343456ceab722a\nsha256: 492682f877607ee99df2ddd2bd5953fd727bdf6e19d397de9dbbafd",
+            "is_debug_cert": false,
+            "bad_certificate": false
+        },
+        "permissions": [],
+        "dangerous_services": [],
+        "suspicious_api_calls": [],
+        "high_risk_components": [],
+        "store_info": null,
+        "network_security": {
+            "summary": {
+                "high": 0,
+                "warning": 0,
+                "secure": 0
+            },
+            "configured_domains": [],
+            "vulnerabilities": []
+        }
+    }
+}
