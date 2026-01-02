@@ -8,7 +8,6 @@ import json
 
 load_dotenv()    
 
-
 class CAPEAnalyzer:
     def __init__(self):
         self.base_url = os.getenv("CAPE_BASE_URL")
@@ -141,6 +140,9 @@ class CAPEAnalyzer:
 
     def get_report(self, task_id: int):
         report = self.get_task_report(task_id)
+        with open('z-report2.0-cape.json','w',encoding='utf-8') as wf:
+            wf.write(json.dumps(report, ensure_ascii=False, indent=4))
+            wf.close()
 
         if report.get("status") != "success":
             return report
@@ -345,40 +347,67 @@ class CAPEAnalyzer:
             "data": filtered_data
         }
 
+    def ScanFile(self, file_path):
+        ck = self.cheack_analyer(file_path=file_path)
+        print(ck)
+        # if len(ck) > 0:
+
 cape = None
 def CAPE():
     global cape
     if cape is None:
         cape = CAPEAnalyzer()
     return cape
-# file_path = "AnyDesk.exe"
 
-# ตัวอย่างที่ 1: เช็คว่าไฟล์เคยถูกวิเคราะห์แล้วหรือไม่
-# task_id = cape.cheack_analyer(file_path)
-# print(task_id)
 
-# ตัวอย่างที่ 2: ส่งไฟล์เข้าวิเคราะห์
-# print('*'*100)
-# result = cape.create_file_task(file_path)
-# print(result)
 
-# # ตัวอย่างที่ 3: เช็คสถานะของ task
-# status_task = {
-#     "data":None,
-#     "error":False
-# }
+def testcape(file_path,dele=False):
+    cape = CAPEAnalyzer()
+    ckid = cape.cheack_analyer(file_path)
+    print(ckid)
+    if len(ckid) == 0:
+        result = cape.create_file_task(file_path=file_path,machine="win10")
+        print(result)
+        if result.get('status','faild'):
+            print("status : Faild")
+            return
+        task_id = result.get('task_id',None)
+        if task_id is None:
+            print("Task ID is None")
+            return
+        if task_id is None:
+            print(f"Task ID : {task_id}")
+            return
+        return
 
-# task_id = result.get("task_id")
-# if task_id:
-#     status_task = cape.get_task_status(task_id.get("id"))
-#     print(f"Status: {status_task}")
+    task_id = ckid[0].get('id',None)
+    if task_id is None:
+        print(f"Task ID : {task_id}")
+        return
+    
+    if dele:
+        cape.delete_taskID(task_id)
+        return
+    
+    status_task = cape.get_task_status(task_id)
+    print(f"Status: {status_task}")
+    if status_task.get('error',True):
+        print("Error : !!!")
+        return
 
-# # ตัวอย่างที่ 4: ดึงรายงานแบบ filtered สำหรับ LLM
-# print('*'*100)
-# if not status_task.get("error") and status_task.get("data"): 
-#     if task_id:
-#         report = cape.get_report(task_id.get("id"))
-#         with open("cape_report.json",'w',encoding="utf-8") as wf:
-#             report_str = json.dumps(report, ensure_ascii=False, indent=4)
-#             wf.write(report_str)
-#             wf.close()
+    status_data = status_task.get('data','pending')
+    if status_data != 'reported':
+        print(f"Status Task Data : {status_data}")
+        return
+
+    report = cape.get_report(task_id)
+    with open("cape_report.json",'w',encoding="utf-8") as wf:
+        report_str = json.dumps(report, ensure_ascii=False, indent=4)
+        wf.write(report_str)
+        wf.close()
+    return
+
+
+file_path = "/home/passapol/Downloads/AnyDesk.exe"
+testcape(file_path)
+
