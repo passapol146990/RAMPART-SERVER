@@ -258,7 +258,7 @@ async def uploadFile(
 
     return {
         "success": True,
-        "file_id": sha256_hash,  # ใช้ SHA256 เป็น file_id
+        "file_id": sha256_hash,
         "filename": original_filename,
         "file_path": str(file_path),
         "file_size": total_size,
@@ -267,8 +267,8 @@ async def uploadFile(
         "analysis_tool": analysis_tool,
         "virustotal_eligible": total_size <= VIRUSTOTAL_MAX_SIZE,
         "file_already_exists": file_already_exists,
-        "task_id": task.id,  # Task ID สำหรับติดตามสถานะ
-        "task_status": "queued",  # สถานะเริ่มต้น
+        "task_id": task.id,
+        "task_status": "queued",
         "message": (f"File already exists, using existing file. " if file_already_exists else f"File uploaded successfully. ") +
                     f"Task queued for analysis using {analysis_tool.upper()}" +
                     (f" and VirusTotal" if total_size <= VIRUSTOTAL_MAX_SIZE else " (VirusTotal: file too large)")

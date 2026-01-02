@@ -7,7 +7,6 @@ import json
 
 VIRUSTOTAL_MAX_SIZE = 32 * 1024 * 1024  # 32 MB
 
-# Decorator @celery_app.task เปลี่ยนฟังก์ชันธรรมดาให้เป็น Task
 @celery_app.task(bind=True)
 def analyze_malware_task(self, file_path: str, file_hashes:dict, total_size: int, analysis_tool:str):
     results = {}

@@ -140,7 +140,7 @@ class CAPEAnalyzer:
 
     def get_report(self, task_id: int):
         report = self.get_task_report(task_id)
-        with open('z-report2.0-cape.json','w',encoding='utf-8') as wf:
+        with open(f'z-report2.0-cape-{task_id}.json','w',encoding='utf-8') as wf:
             wf.write(json.dumps(report, ensure_ascii=False, indent=4))
             wf.close()
 
@@ -364,44 +364,55 @@ def CAPE():
 def testcape(file_path,dele=False):
     cape = CAPEAnalyzer()
     ckid = cape.cheack_analyer(file_path)
+    print(f"{'#'*50}[ {file_path} ]{'#'*50}")
     print(ckid)
     if len(ckid) == 0:
         result = cape.create_file_task(file_path=file_path,machine="win10")
+        print('*'*100)
         print(result)
         if result.get('status','faild'):
+            print('*'*100)
             print("status : Faild")
             return
         task_id = result.get('task_id',None)
         if task_id is None:
+            print('*'*100)
             print("Task ID is None")
             return
         if task_id is None:
+            print('*'*100)
             print(f"Task ID : {task_id}")
             return
         return
 
     task_id = ckid[0].get('id',None)
+    taskTarget = ckid[0].get('target',task_id)
     if task_id is None:
+        print('*'*100)
         print(f"Task ID : {task_id}")
         return
     
     if dele:
+        print('*'*100)
         cape.delete_taskID(task_id)
         return
     
     status_task = cape.get_task_status(task_id)
+    print('*'*100)
     print(f"Status: {status_task}")
     if status_task.get('error',True):
+        print('*'*100)
         print("Error : !!!")
         return
 
     status_data = status_task.get('data','pending')
     if status_data != 'reported':
+        print('*'*100)
         print(f"Status Task Data : {status_data}")
         return
 
     report = cape.get_report(task_id)
-    with open("cape_report.json",'w',encoding="utf-8") as wf:
+    with open(f"z-report4.1-cape-{task_id}{taskTarget.replace('.','')}.json",'w',encoding="utf-8") as wf:
         report_str = json.dumps(report, ensure_ascii=False, indent=4)
         wf.write(report_str)
         wf.close()
@@ -410,4 +421,11 @@ def testcape(file_path,dele=False):
 
 file_path = "/home/passapol/Downloads/AnyDesk.exe"
 testcape(file_path)
-
+file_path = "/home/passapol/Downloads/SpyEye/Spyeye/SpyEye1.exe"
+testcape(file_path)
+file_path = "/home/passapol/Downloads/SpyEye/Spyeye/SpyEye2.exe"
+testcape(file_path)
+file_path = "/home/passapol/Downloads/SpyEye/Spyeye/SpyEye3.exe"
+testcape(file_path)
+file_path = "/home/passapol/Downloads/SpyEye/Spyeye/SpyEye4.exe"
+testcape(file_path)

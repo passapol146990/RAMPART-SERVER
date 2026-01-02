@@ -1,6 +1,7 @@
 import os
 import platform
 from dotenv import load_dotenv
+
 load_dotenv()
 
 print(f"\nRedis Configuration:")

@@ -1,6 +1,7 @@
 from celery import Celery
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 
 REDIS_HOST = os.environ.get("REDIS_HOST", "127.0.0.1")
@@ -9,8 +10,6 @@ REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD", "")
 
 if REDIS_PASSWORD:
     REDIS_URL = f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0"
-else:
-    REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
 
 # สร้าง Instance ของ Celery
 # broker: ที่ฝากงาน (Redis)
