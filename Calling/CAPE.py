@@ -9,222 +9,135 @@ import json
 load_dotenv()    
 
 from typing import Dict, Any, List, Optional
-# ==========================================
-# Helper Functions (ฟังก์ชันช่วยดึงข้อมูล)
-# ==========================================
+import json
 
-def extract_critical_apis(raw_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """
-    ดึงข้อมูล API ที่มัลแวร์ชอบใช้ (DexClassLoader, Native Code) จาก android_api
-    """
-    critical_keys = [
-        "api_dexloading",       # (สำคัญมาก) ใช้โหลดโค้ดอันตรายทีหลัง
-        "api_native_code",      # ใช้ C/C++ ซ่อนพฤติกรรม
-        "api_base64_decode",    # ใช้ถอดรหัส Payload ที่ซ่อนมา
-        "api_sms_call",         # (Joker) ใช้สมัคร SMS กินเงิน
-        "api_system_properties" # ใช้เช็คสภาพเครื่อง (Anti-VM)
-    ]
-    
-    found_apis = []
-    android_api = raw_data.get("android_api", {}) or {} # ใช้ or {} กันเหนียว
-    
-    for key in critical_keys:
-        if key in android_api:
-            data = android_api[key]
-            # ดึงข้อมูลแค่พอสังเขป ลด Token
-            desc = data.get("metadata", {}).get("description", key)
-            file_count = len(data.get("files", {}))
-            
-            found_apis.append({
-                "type": key,
-                "description": desc,
-                "file_count": file_count
-            })
-    return found_apis
+class CleanCapeReport:
+    def __init__(self, json_data):
+        # รับ JSON Data (ที่เป็น Dict อยู่แล้ว) เข้ามา
+        self.data = json_data
 
-def extract_high_risk_findings(raw_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """
-    ดึงผลวิเคราะห์ Code Analysis เฉพาะระดับ High/Warning
-    """
-    findings = []
-    code_analysis = raw_data.get("code_analysis", {})
-    # code_analysis อาจเป็น Dict หรือ List ใน MobSF บางเวอร์ชัน ต้องเช็ค
-    if not isinstance(code_analysis, dict):
-        return []
+    def get_cape_score(self):
+        """ดึงคะแนน Malscore (0-10)"""
+        if not self.data:
+            return 0
+        return self.data.get("malscore", 0)
 
-    findings_data = code_analysis.get("findings", {})
-    
-    if not findings_data:
-        return []
+    def get_malware_family(self):
+        """ดึงชื่อตระกูลมัลแวร์ (ถ้า CAPE ระบุได้)"""
+        if not self.data:
+            return None
+        return self.data.get("malware_family")
 
-    for rule_id, data in findings_data.items():
-        metadata = data.get("metadata", {})
-        severity = metadata.get("severity", "info")
+    def get_mitre_ttps(self):
+        """
+        ดึงข้อมูล MITRE ATT&CK TTPs
+        สิ่งนี้สำคัญมากสำหรับ AI เพราะมันบอก 'เจตนา' ของไฟล์ (เช่น ขโมยข้อมูล, ซ่อนตัว)
+        """
+        if not self.data:
+            return []
+
+        ttps_set = set() # ใช้ Set เพื่อตัดตัวซ้ำ
         
-        # คัดเอาเฉพาะ High และ Warning
-        if severity in ["high", "warning"]:
-            findings.append({
-                "rule_id": rule_id,
-                "title": data.get("title", rule_id),
-                "severity": severity
+        # CAPE มักเก็บ TTPs ไว้ใน top-level key 'ttps'
+        raw_ttps = self.data.get("ttps", [])
+        
+        if isinstance(raw_ttps, list):
+            for ttp_group in raw_ttps:
+                # บางเวอร์ชันเป็น list of strings เลย, บางเวอร์ชันเป็น dict
+                if isinstance(ttp_group, str):
+                     ttps_set.add(ttp_group)
+                elif isinstance(ttp_group, dict):
+                    # ดึงจาก list ข้างในอีกที
+                    sub_ttps = ttp_group.get("ttps", [])
+                    for t_id in sub_ttps:
+                        ttps_set.add(t_id)
+
+        # แปลงกลับเป็น list เพื่อให้ serializable เป็น JSON
+        return list(ttps_set)
+
+    def get_signatures(self):
+        """
+        ดึงพฤติกรรมที่น่าสงสัย (Signatures)
+        คัดเฉพาะที่มี Severity สูงๆ เพื่อไม่ให้รก
+        """
+        if not self.data:
+            return []
+
+        signatures = []
+        raw_sigs = self.data.get("signatures", [])
+        
+        for sig in raw_sigs:
+            # ดึงเฉพาะข้อมูลที่จำเป็น
+            signatures.append({
+                "name": sig.get("name"),
+                "description": sig.get("description"),
+                "severity": sig.get("severity", 1)
             })
-    return findings
+            
+        # เรียงลำดับจากความรุนแรงมาก -> น้อย
+        signatures.sort(key=lambda x: x['severity'], reverse=True)
+        
+        # ส่งคืนแค่ Top 10 เพื่อประหยัด Token แต่ได้เนื้อหาเน้นๆ
+        return signatures[:10]
 
-def clean_network_security(net_sec_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    if not net_sec_data:
-        return None
-
-    summary = net_sec_data.get("network_summary", {})
-    findings = net_sec_data.get("network_findings", [])
-    
-    insecure_connections = []
-    connected_domains = set()
-
-    for item in findings:
-        for scope in item.get("scope", []):
-            connected_domains.add(scope)
-
-        if item.get("severity") != "secure":
-            insecure_connections.append({
-                "severity": item.get("severity"),
-                "scope": item.get("scope"),
-                "description": item.get("description")
+    def get_network_activity(self):
+        """ดึงข้อมูล Network (HTTP, DNS)"""
+        if not self.data:
+            return {}
+            
+        network = self.data.get("network", {})
+        
+        # 1. HTTP Requests (ดูว่ายิงไป URL ไหน)
+        http_reqs = []
+        for req in network.get("http", [])[:5]: # เอาแค่ 5 อันแรก
+            http_reqs.append({
+                "url": req.get("uri"),
+                "host": req.get("host")
             })
 
-    return {
-        "summary": {
-            "high": summary.get("high", 0),
-            "warning": summary.get("warning", 0),
-            "secure": summary.get("secure", 0)
-        },
-        "configured_domains": list(connected_domains),
-        "vulnerabilities": insecure_connections
-    }
+        # 2. DNS Queries (ดูว่าพยายามเข้าเว็บไหน)
+        dns_reqs = []
+        for dns in network.get("dns", [])[:5]:
+            dns_reqs.append({
+                "request": dns.get("request"),
+                "answer": dns.get("answers", [])
+            })
 
-def filter_playstore_details(playstore_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    if not playstore_data or playstore_data.get("error"):
-        return None
-
-    return {
-        "title": playstore_data.get("title"),
-        "developer": {
-            "name": playstore_data.get("developer"),
-            "id": playstore_data.get("developerId"),
-            "website": playstore_data.get("developerWebsite"),
-            "email": playstore_data.get("developerEmail")
-        },
-        "category": playstore_data.get("genre"),
-        "description": playstore_data.get("summary") or (playstore_data.get("description", "")[:500] + "..."),
-        "credibility": {
-            "installs": playstore_data.get("installs"),
-            "score": playstore_data.get("score"),
-            "ratings_count": playstore_data.get("ratings"),
-            "last_updated": playstore_data.get("lastUpdatedOn")
+        return {
+            "http": http_reqs,
+            "dns": dns_reqs
         }
-    }
 
-# ==========================================
-# Main Function (ฟังก์ชันหลัก)
-# ==========================================
-
-def clean_mobsf_report(raw_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    if not raw_data:
-        return None
-    
-    # 1. โครงสร้างพื้นฐาน + [NEW] Code Behavior
-    cleaned = {
-        "file_info": {
-            "app_name": raw_data.get("app_name"),
-            "package_name": raw_data.get("package_name"),
-            "version_name": raw_data.get("version_name"),
-            "size": raw_data.get("size"),
-            "md5": raw_data.get("md5")
-        },
-        "security_score": raw_data.get("appsec", {}).get("security_score"),
-        
-        # --- ส่วนใหม่ที่เพิ่มเข้ามา ---
-        "code_behavior": {
-            "suspicious_apis": extract_critical_apis(raw_data),      # เช็ค DexLoading, NativeCode
-            "risk_findings": extract_high_risk_findings(raw_data)    # เช็ค High Risk Findings
-        },
-        # ------------------------
-        
-        "signer_info": {},          
-        "permissions": [],          
-        "dangerous_services": [],   
-        "suspicious_api_calls": [], 
-        "high_risk_components": [], 
-        
-        "store_info": filter_playstore_details(raw_data.get("playstore_details")),
-        "network_security": clean_network_security(raw_data.get("network_security"))
-    }
-
-    # 2. Signer Analysis
-    cert_analysis = raw_data.get("certificate_analysis", {})
-    cert_details = cert_analysis.get("certificate_info", "")
-    
-    cleaned["signer_info"] = {
-        "raw_data": str(cert_details)[:500],
-        "is_debug_cert": "debug" in str(cert_details).lower() or "android" in str(cert_details).lower(),
-        "bad_certificate": cert_analysis.get("certificate_status") == "bad"
-    }
-
-    # 3. Permission Analysis
-    if "permissions" in raw_data:
-        for perm_name, details in raw_data["permissions"].items():
-            is_dangerous = details.get("status") == "dangerous"
-            is_malware_related = "SYSTEM_ALERT_WINDOW" in perm_name or "RECEIVE_SMS" in perm_name
+    def get_behavior_summary(self):
+        """สรุปการกระทำกับไฟล์และระบบ"""
+        if not self.data:
+            return {}
             
-            if is_dangerous or is_malware_related:
-                cleaned["permissions"].append({
-                    "name": perm_name,
-                    "description": details.get("description")
-                })
-
-    # 4. Manifest Analysis
-    manifest = raw_data.get("manifest_analysis", [])
-    for item in manifest:
-        title = ""
-        desc = ""
+        summary = self.data.get("behavior", {}).get("summary", {})
         
-        if isinstance(item, dict):
-            title = str(item.get("title", "")).lower()
-            desc = str(item.get("desc", "")).lower()
-        elif isinstance(item, str):
-            title = str(item).lower()
-            desc = ""
-        else:
-            continue
-        
-        if "accessibility" in title or "accessibility" in desc:
-            cleaned["dangerous_services"].append("BIND_ACCESSIBILITY_SERVICE")
-        if "device admin" in title:
-            cleaned["dangerous_services"].append("BIND_DEVICE_ADMIN")
+        def limit_list(key):
+            return summary.get(key, [])[:5] # ตัดเหลือ 5 บรรทัด
 
-    # 5. Code Analysis (Legacy - เก็บไว้ตามคำขอเพื่อความชัวร์)
-    code_analysis = raw_data.get("code_analysis", {})
-    target_apis = ["DexClassLoader", "PathClassLoader", "Runtime.exec", "Cipher"]
-    
-    # เช็คว่า code_analysis เป็น dict จริงๆ ก่อน loop
-    if isinstance(code_analysis, dict):
-        for key, findings in code_analysis.items():
-            key_str = str(key)
-            
-            if any(api in key_str for api in target_apis):
-                cleaned["suspicious_api_calls"].append(key_str)
-                
-            elif isinstance(findings, dict) and findings.get("metadata", {}).get("severity") == "high":
-                cleaned["high_risk_components"].append(key_str)
+        return {
+            "files_written": limit_list("files"),
+            "registry_keys_modified": limit_list("keys"),
+            "commands_executed": limit_list("command_line") # สำคัญ: ดูว่าสั่ง CMD อะไรบ้าง
+        }
 
-    return cleaned
+    def clean_data(self):
+        """รวมข้อมูลทั้งหมดเป็น JSON ก้อนเล็ก"""
+        if not self.data:
+            return None
 
-rf = open("Calling\z-report2.0-cape-34.json",'r',encoding='utf-8')
-rf_data = json.load(rf)
-rf.close()
-
-print(rf_data.get("data"))
-print(clean_mobsf_report(rf_data.get("data")))
-
+        return {
+            "source": "CAPE Sandbox",
+            "score": self.get_cape_score(),
+            "malware_family": self.get_malware_family(),
+            "mitre_attack_techniques": self.get_mitre_ttps(), # เพิ่ม TTPs
+            "critical_signatures": self.get_signatures(),
+            "network_behavior": self.get_network_activity(),
+            "system_behavior": self.get_behavior_summary()
+        }
 
 class CAPEAnalyzer:
     def __init__(self):
@@ -308,7 +221,7 @@ class CAPEAnalyzer:
             wf.write(json.dumps(report, ensure_ascii=False, indent=4))
 
         if report.get("status") != "success": return report
-        return {"status": "success", "data": clean_mobsf_report(report.get("data", {}))}
+        return {"status": "success", "data": CleanCapeReport(report.get("data", {}).clean_data())}
 
 # (ลบ Method MobSF ที่หลุดเข้ามา: scan_file, get_report_json)
 # (ลบ Test Code ท้ายไฟล์)
