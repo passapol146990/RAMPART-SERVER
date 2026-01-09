@@ -240,7 +240,7 @@ class VirusToTalAPI:
     # -----------------------------
     # Get Report by File Hash
     # -----------------------------
-    def get_report_by_base64(self, base64_string: str, clean: bool = True) -> Dict[str, Any]:
+    def get_report_by_base64(self, base64_string: str) -> Dict[str, Any]:
         md5_and_number = deCode_base64_string(base64_string)
         file_hash = md5_and_number.split(':')[0]
         url = f"{self.BASE_URL}/files/{file_hash}"
@@ -250,21 +250,21 @@ class VirusToTalAPI:
             with open('z-report1-vt.json','w',encoding='utf-8') as wf:
                 wf.write(json.dumps(raw_report,ensure_ascii=False, indent=4))
                 wf.close()
-            data = self._clean_virustotal_report(raw_report) if clean else raw_report
+            data = self._clean_virustotal_report(raw_report)
             return {"success":True, "data":data}
         except Exception as e:
             return {"success":False, "message":e} 
 
 
-    def get_report_by_hash(self, file_hash: str, clean: bool = True) -> Dict[str, Any]:
+    def get_report_by_hash(self, file_hash: str) -> Dict[str, Any]:
         url = f"{self.BASE_URL}/files/{file_hash}"
 
         try:
             raw_report = self._make_request("GET", url)
             with open('z-report1-vt.json','w',encoding='utf-8') as wf:
-                wf.write(json.dumps(raw_report,ensure_ascii=False, indent=4))
+                wf.write(json.dumps(raw_report, ensure_ascii=False, indent=4))
                 wf.close()
-            data =  self._clean_virustotal_report(raw_report) if clean else raw_report
+            data =  self._clean_virustotal_report(raw_report)
             return {"success":True, "data":data}
         except Exception as e:
             return {"success":False, "message":e} 

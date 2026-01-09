@@ -8,6 +8,216 @@ import json
 
 load_dotenv()    
 
+from typing import Dict, Any, List, Optional
+# ==========================================
+# Helper Functions (ฟังก์ชันช่วยดึงข้อมูล)
+# ==========================================
+
+def extract_critical_apis(raw_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    ดึงข้อมูล API ที่มัลแวร์ชอบใช้ (DexClassLoader, Native Code) จาก android_api
+    """
+    critical_keys = [
+        "api_dexloading",       # (สำคัญมาก) ใช้โหลดโค้ดอันตรายทีหลัง
+        "api_native_code",      # ใช้ C/C++ ซ่อนพฤติกรรม
+        "api_base64_decode",    # ใช้ถอดรหัส Payload ที่ซ่อนมา
+        "api_sms_call",         # (Joker) ใช้สมัคร SMS กินเงิน
+        "api_system_properties" # ใช้เช็คสภาพเครื่อง (Anti-VM)
+    ]
+    
+    found_apis = []
+    android_api = raw_data.get("android_api", {}) or {} # ใช้ or {} กันเหนียว
+    
+    for key in critical_keys:
+        if key in android_api:
+            data = android_api[key]
+            # ดึงข้อมูลแค่พอสังเขป ลด Token
+            desc = data.get("metadata", {}).get("description", key)
+            file_count = len(data.get("files", {}))
+            
+            found_apis.append({
+                "type": key,
+                "description": desc,
+                "file_count": file_count
+            })
+    return found_apis
+
+def extract_high_risk_findings(raw_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    ดึงผลวิเคราะห์ Code Analysis เฉพาะระดับ High/Warning
+    """
+    findings = []
+    code_analysis = raw_data.get("code_analysis", {})
+    # code_analysis อาจเป็น Dict หรือ List ใน MobSF บางเวอร์ชัน ต้องเช็ค
+    if not isinstance(code_analysis, dict):
+        return []
+
+    findings_data = code_analysis.get("findings", {})
+    
+    if not findings_data:
+        return []
+
+    for rule_id, data in findings_data.items():
+        metadata = data.get("metadata", {})
+        severity = metadata.get("severity", "info")
+        
+        # คัดเอาเฉพาะ High และ Warning
+        if severity in ["high", "warning"]:
+            findings.append({
+                "rule_id": rule_id,
+                "title": data.get("title", rule_id),
+                "severity": severity
+            })
+    return findings
+
+def clean_network_security(net_sec_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    if not net_sec_data:
+        return None
+
+    summary = net_sec_data.get("network_summary", {})
+    findings = net_sec_data.get("network_findings", [])
+    
+    insecure_connections = []
+    connected_domains = set()
+
+    for item in findings:
+        for scope in item.get("scope", []):
+            connected_domains.add(scope)
+
+        if item.get("severity") != "secure":
+            insecure_connections.append({
+                "severity": item.get("severity"),
+                "scope": item.get("scope"),
+                "description": item.get("description")
+            })
+
+    return {
+        "summary": {
+            "high": summary.get("high", 0),
+            "warning": summary.get("warning", 0),
+            "secure": summary.get("secure", 0)
+        },
+        "configured_domains": list(connected_domains),
+        "vulnerabilities": insecure_connections
+    }
+
+def filter_playstore_details(playstore_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    if not playstore_data or playstore_data.get("error"):
+        return None
+
+    return {
+        "title": playstore_data.get("title"),
+        "developer": {
+            "name": playstore_data.get("developer"),
+            "id": playstore_data.get("developerId"),
+            "website": playstore_data.get("developerWebsite"),
+            "email": playstore_data.get("developerEmail")
+        },
+        "category": playstore_data.get("genre"),
+        "description": playstore_data.get("summary") or (playstore_data.get("description", "")[:500] + "..."),
+        "credibility": {
+            "installs": playstore_data.get("installs"),
+            "score": playstore_data.get("score"),
+            "ratings_count": playstore_data.get("ratings"),
+            "last_updated": playstore_data.get("lastUpdatedOn")
+        }
+    }
+
+# ==========================================
+# Main Function (ฟังก์ชันหลัก)
+# ==========================================
+
+def clean_mobsf_report(raw_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    if not raw_data:
+        return None
+    
+    # 1. โครงสร้างพื้นฐาน + [NEW] Code Behavior
+    cleaned = {
+        "file_info": {
+            "app_name": raw_data.get("app_name"),
+            "package_name": raw_data.get("package_name"),
+            "version_name": raw_data.get("version_name"),
+            "size": raw_data.get("size"),
+            "md5": raw_data.get("md5")
+        },
+        "security_score": raw_data.get("appsec", {}).get("security_score"),
+        
+        # --- ส่วนใหม่ที่เพิ่มเข้ามา ---
+        "code_behavior": {
+            "suspicious_apis": extract_critical_apis(raw_data),      # เช็ค DexLoading, NativeCode
+            "risk_findings": extract_high_risk_findings(raw_data)    # เช็ค High Risk Findings
+        },
+        # ------------------------
+        
+        "signer_info": {},          
+        "permissions": [],          
+        "dangerous_services": [],   
+        "suspicious_api_calls": [], 
+        "high_risk_components": [], 
+        
+        "store_info": filter_playstore_details(raw_data.get("playstore_details")),
+        "network_security": clean_network_security(raw_data.get("network_security"))
+    }
+
+    # 2. Signer Analysis
+    cert_analysis = raw_data.get("certificate_analysis", {})
+    cert_details = cert_analysis.get("certificate_info", "")
+    
+    cleaned["signer_info"] = {
+        "raw_data": str(cert_details)[:500],
+        "is_debug_cert": "debug" in str(cert_details).lower() or "android" in str(cert_details).lower(),
+        "bad_certificate": cert_analysis.get("certificate_status") == "bad"
+    }
+
+    # 3. Permission Analysis
+    if "permissions" in raw_data:
+        for perm_name, details in raw_data["permissions"].items():
+            is_dangerous = details.get("status") == "dangerous"
+            is_malware_related = "SYSTEM_ALERT_WINDOW" in perm_name or "RECEIVE_SMS" in perm_name
+            
+            if is_dangerous or is_malware_related:
+                cleaned["permissions"].append({
+                    "name": perm_name,
+                    "description": details.get("description")
+                })
+
+    # 4. Manifest Analysis
+    manifest = raw_data.get("manifest_analysis", [])
+    for item in manifest:
+        title = ""
+        desc = ""
+        
+        if isinstance(item, dict):
+            title = str(item.get("title", "")).lower()
+            desc = str(item.get("desc", "")).lower()
+        elif isinstance(item, str):
+            title = str(item).lower()
+            desc = ""
+        else:
+            continue
+        
+        if "accessibility" in title or "accessibility" in desc:
+            cleaned["dangerous_services"].append("BIND_ACCESSIBILITY_SERVICE")
+        if "device admin" in title:
+            cleaned["dangerous_services"].append("BIND_DEVICE_ADMIN")
+
+    # 5. Code Analysis (Legacy - เก็บไว้ตามคำขอเพื่อความชัวร์)
+    code_analysis = raw_data.get("code_analysis", {})
+    target_apis = ["DexClassLoader", "PathClassLoader", "Runtime.exec", "Cipher"]
+    
+    # เช็คว่า code_analysis เป็น dict จริงๆ ก่อน loop
+    if isinstance(code_analysis, dict):
+        for key, findings in code_analysis.items():
+            key_str = str(key)
+            
+            if any(api in key_str for api in target_apis):
+                cleaned["suspicious_api_calls"].append(key_str)
+                
+            elif isinstance(findings, dict) and findings.get("metadata", {}).get("severity") == "high":
+                cleaned["high_risk_components"].append(key_str)
+
+    return cleaned
+
 class CAPEAnalyzer:
     def __init__(self):
         self.base_url = os.getenv("CAPE_BASE_URL")
@@ -19,7 +229,6 @@ class CAPEAnalyzer:
         with open(file_path, 'rb') as f:
             for chunk in iter(lambda: f.read(4096), b''):
                 hash_obj.update(chunk)
-
         return hash_obj.hexdigest()
 
     def cheack_analyer(self, file_path: str, hash_type: str = "sha256"):
@@ -32,46 +241,36 @@ class CAPEAnalyzer:
         except requests.exceptions.RequestException as e:
             return {"error": str(e), "data": None}
 
-    def delete_taskID(self,task_id):
-        requests.get(f"{self.base_url}/apiv2/tasks/delete/{task_id}")
+    def delete_taskID(self, task_id):
+        try:
+            requests.get(f"{self.base_url}/apiv2/tasks/delete/{task_id}")
+        except: pass
 
-    def create_file_task(
-        self,
-        file_path: str,
-        machine: Optional[str] = None,
-        is_pcap: bool = False,
-    ) -> Dict[str, Any]:
+    def create_file_task(self, file_path: str, machine: Optional[str] = None, is_pcap: bool = False) -> Dict[str, Any]:
         check_analy = self.cheack_analyer(file_path)
-        if len(check_analy) > 0:
+        if check_analy and len(check_analy) > 0:
             return {
                 "status": "exists",
-                "task_id": check_analy[0],
-                "message": f"File already analyzed. Task ID: {check_analy[0]["id"]}"
+                "task_id": check_analy[0].get('id'),
+                "message": "File already analyzed."
             }
         
-
         url = f"{self.base_url}/apiv2/tasks/create/file/"
-
         files = {'file': open(file_path, 'rb')}
         data = {}
-
-        if machine:
-            data['machine'] = machine
-
-        if is_pcap:
-            data['pcap'] = '1'
+        if machine: data['machine'] = machine
+        if is_pcap: data['pcap'] = '1'
 
         try:
             response = requests.post(url, files=files, data=data)
             response.raise_for_status()
             result = response.json()
-
             return {
                 "status": "created",
                 "task_id": result.get("data", {}).get("task_ids", [None])[0] if result.get("data") else None,
                 "response": result
             }
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             return {"status": "error", "error": str(e)}
         finally:
             files['file'].close()
@@ -82,350 +281,27 @@ class CAPEAnalyzer:
             response = requests.get(url)
             response.raise_for_status()
             return response.json()
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             return {"error": str(e), "data": None}
 
-    def wait_for_task(
-        self,
-        task_id: int,
-        timeout: int = 600,
-        poll_interval: int = 10,
-        verbose: bool = True
-    ) -> bool:
-        start_time = time.time()
-
-        while time.time() - start_time < timeout:
-            status = self.get_task_status(task_id)
-
-            if status.get("data"):
-                task_status = status["data"].get("status")
-
-                if verbose:
-                    print(f"Task {task_id} status: {task_status}")
-
-                if task_status == "reported":
-                    return True
-                elif task_status in ["failed_analysis", "failed_processing"]:
-                    if verbose:
-                        print(f"Task {task_id} failed!")
-                    return False
-
-            time.sleep(poll_interval)
-
-        if verbose:
-            print(f"Task {task_id} timeout after {timeout} seconds")
-        return False
-
-    def get_task_report(
-        self,
-        task_id: int,
-        report_format: str = "json",
-        download_zip: bool = False
-    ):
+    def get_task_report(self, task_id: int, report_format: str = "json"):
         url = f"{self.base_url}/apiv2/tasks/get/report/{task_id}/{report_format}/"
-
-        if download_zip:
-            url += "zip/"
-
         try:
             response = requests.get(url)
             response.raise_for_status()
-
-            if download_zip:
-                return {"status": "success", "content": response.content, "type": "zip"}
-            else:
-                return {"status": "success", "data": response.json()}
-        except requests.exceptions.RequestException as e:
+            return {"status": "success", "data": response.json()}
+        except Exception as e:
             return {"status": "error", "error": str(e)}
 
     def get_report(self, task_id: int):
         report = self.get_task_report(task_id)
+        
         with open(f'z-report2.0-cape-{task_id}.json','w',encoding='utf-8') as wf:
             wf.write(json.dumps(report, ensure_ascii=False, indent=4))
-            wf.close()
 
-        if report.get("status") != "success":
-            return report
-
+        if report.get("status") != "success": return report
         raw_data = report.get("data", {})
+        return {"status": "success", "data": clean_mobsf_report(raw_data)}
 
-        # === 1. Target File Information ===
-        target = raw_data.get("target", {})
-        file_info = target.get("file", {})
-        pe_info = file_info.get("pe", {})
-        versioninfo = pe_info.get("versioninfo", [])
-
-        # Extract company name from PE version info
-        company_name = "Unknown"
-        product_name = "Unknown"
-        file_description = "Unknown"
-
-        for item in versioninfo:
-            name = item.get("name", "")
-            value = item.get("value", "")
-            if name == "CompanyName":
-                company_name = value
-            elif name == "ProductName":
-                product_name = value
-            elif name == "FileDescription":
-                file_description = value
-
-        # === 2. Signatures Analysis (จัดกลุ่มตาม severity) ===
-        all_signatures = raw_data.get("signatures", [])
-
-        critical_signatures = []  # severity 3+
-        warning_signatures = []   # severity 2
-        info_signatures = []      # severity 1
-
-        # ตรวจหา malware identification จาก signature names
-        malware_names = []
-
-        for sig in all_signatures:
-            sig_name = sig.get("name", "")
-            sig_desc = sig.get("description", "")
-            sig_severity = sig.get("severity", 0)
-
-            sig_data = {
-                "name": sig_name,
-                "description": sig_desc,
-                "severity": sig_severity
-            }
-
-            # จัดกลุ่มตาม severity
-            if sig_severity >= 3:
-                critical_signatures.append(sig_data)
-            elif sig_severity == 2:
-                warning_signatures.append(sig_data)
-            else:
-                info_signatures.append(sig_data)
-
-            # ตรวจหา malware family names
-            malware_keywords = [
-                "ransomware", "stealer", "trojan", "backdoor", "rootkit",
-                "banker", "cryptominer", "loader", "dropper", "keylogger",
-                "rat", "spyware", "worm", "virus", "exploit"
-            ]
-
-            for keyword in malware_keywords:
-                if keyword in sig_name.lower():
-                    malware_names.append(sig_name)
-                    break
-        
-        # === 3. Network Activity ===
-        network = raw_data.get("network", {})
-
-        hosts = network.get("hosts", [])
-        http_requests = network.get("http", [])
-        dns_requests = network.get("dns", [])
-        tcp_connections = network.get("tcp", [])
-        udp_connections = network.get("udp", [])
-
-        # Extract suspicious domains/IPs
-        suspicious_hosts = []
-        for host in hosts[:10]:  # Top 10 hosts
-            suspicious_hosts.append({
-                "ip": host.get("ip"),
-                "country": host.get("country_name", "Unknown")
-            })
-
-        # Extract HTTP requests (potential C2 communication)
-        http_summary = []
-        for req in http_requests[:10]:
-            http_summary.append({
-                "method": req.get("method"),
-                "uri": req.get("uri"),
-                "host": req.get("host")
-            })
-
-        # DNS queries
-        dns_summary = [dns.get("request") for dns in dns_requests[:10]]
-
-        network_summary = {
-            "has_network_activity": len(hosts) > 0,
-            "total_connections": len(tcp_connections) + len(udp_connections),
-            "suspicious_hosts": suspicious_hosts,
-            "http_requests": http_summary,
-            "dns_queries": dns_summary,
-            "tcp_count": len(tcp_connections),
-            "udp_count": len(udp_connections)
-        }
-
-        # === 4. Behavior Analysis ===
-        behavior = raw_data.get("behavior", {})
-        summary = behavior.get("summary", {})
-
-        behavior_summary = {
-            "files_written": summary.get("write_files", [])[:15],
-            "files_deleted": summary.get("delete_files", [])[:15],
-            "files_read": summary.get("read_files", [])[:15],
-            "registry_written": summary.get("write_keys", [])[:15],
-            "registry_deleted": summary.get("delete_keys", [])[:15],
-            "mutexes": summary.get("mutexes", [])[:10],
-            "commands": summary.get("executed_commands", [])[:10],
-        }
-
-        # === 5. TTPs (Tactics, Techniques, and Procedures) ===
-        ttps = raw_data.get("ttps", [])
-        ttps_summary = []
-
-        for ttp in ttps:
-            ttps_summary.append(ttp)
-
-        # === 6. CAPE Malware Extraction ===
-        cape_data = raw_data.get("CAPE", {})
-        cape_payloads = cape_data.get("payloads", []) if isinstance(cape_data, dict) else []
-
-        extracted_malware = [] 
-        for payload in cape_payloads[:5]:
-            extracted_malware.append({
-                "type": payload.get("cape_type"),
-                "yara": payload.get("yara", []),
-                "cape_yara": payload.get("cape_yara", []),
-                "size": payload.get("size")
-            })
-
-        # === 7. Malware Score ===
-        malscore = raw_data.get("malscore", 0.0)
-
-        # === 8. Info ===
-        info = raw_data.get("info", {})
-
-        # === Final Filtered Data for LLM ===
-        filtered_data = {
-            # ข้อมูลไฟล์
-            "target_info": {
-                "filename": file_info.get("name"),
-                "file_type": file_info.get("type"),
-                "file_size": file_info.get("size"),
-                "md5": file_info.get("md5"),
-                "sha256": file_info.get("sha256"),
-                "developer_company": company_name,
-                "product_name": product_name,
-                "file_description": file_description
-            },
-
-            # คะแนนความเสี่ยง
-            "malscore": malscore,
-
-            # Malware Identification
-            "malware_identification": {
-                "identified": len(malware_names) > 0,
-                "malware_families": list(set(malware_names)),  # Remove duplicates
-                "cape_payloads": extracted_malware
-            },
-
-            # Signatures (แบ่งตาม severity)
-            "signatures_analysis": {
-                "total_signatures": len(all_signatures),
-                "critical_count": len(critical_signatures),
-                "warning_count": len(warning_signatures),
-                "info_count": len(info_signatures),
-                "critical_signatures": critical_signatures[:10],  # Top 10
-                "warning_signatures": warning_signatures[:10],
-                "info_signatures": info_signatures[:5]
-            },
-
-            # Network Activity (สำคัญสำหรับ C2 detection)
-            "network_activity": network_summary,
-
-            # Behavior (พฤติกรรมการทำงาน)
-            "behavior_summary": behavior_summary,
-
-            # TTPs (Mitre ATT&CK)
-            "ttps": ttps_summary[:15],
-
-            # Additional Info
-            "analysis_info": {
-                "duration": info.get("duration"),
-                "started": info.get("started"),
-                "ended": info.get("ended")
-            }
-        }
-        
-        return {
-            "status": "success",
-            "data": filtered_data
-        }
-
-    def ScanFile(self, file_path):
-        ck = self.cheack_analyer(file_path=file_path)
-        print(ck)
-        # if len(ck) > 0:
-
-cape = None
-def CAPE():
-    global cape
-    if cape is None:
-        cape = CAPEAnalyzer()
-    return cape
-
-
-
-def testcape(file_path,dele=False):
-    cape = CAPEAnalyzer()
-    ckid = cape.cheack_analyer(file_path)
-    print(f"{'#'*50}[ {file_path} ]{'#'*50}")
-    print(ckid)
-    if len(ckid) == 0:
-        result = cape.create_file_task(file_path=file_path,machine="win10")
-        print('*'*100)
-        print(result)
-        if result.get('status','faild'):
-            print('*'*100)
-            print("status : Faild")
-            return
-        task_id = result.get('task_id',None)
-        if task_id is None:
-            print('*'*100)
-            print("Task ID is None")
-            return
-        if task_id is None:
-            print('*'*100)
-            print(f"Task ID : {task_id}")
-            return
-        return
-
-    task_id = ckid[0].get('id',None)
-    taskTarget = ckid[0].get('target',task_id)
-    if task_id is None:
-        print('*'*100)
-        print(f"Task ID : {task_id}")
-        return
-    
-    if dele:
-        print('*'*100)
-        cape.delete_taskID(task_id)
-        return
-    
-    status_task = cape.get_task_status(task_id)
-    print('*'*100)
-    print(f"Status: {status_task}")
-    if status_task.get('error',True):
-        print('*'*100)
-        print("Error : !!!")
-        return
-
-    status_data = status_task.get('data','pending')
-    if status_data != 'reported':
-        print('*'*100)
-        print(f"Status Task Data : {status_data}")
-        return
-
-    report = cape.get_report(task_id)
-    with open(f"z-report4.1-cape-{task_id}{taskTarget.replace('.','')}.json",'w',encoding="utf-8") as wf:
-        report_str = json.dumps(report, ensure_ascii=False, indent=4)
-        wf.write(report_str)
-        wf.close()
-    return
-
-
-file_path = "/home/passapol/Downloads/AnyDesk.exe"
-testcape(file_path)
-file_path = "/home/passapol/Downloads/SpyEye/Spyeye/SpyEye1.exe"
-testcape(file_path)
-file_path = "/home/passapol/Downloads/SpyEye/Spyeye/SpyEye2.exe"
-testcape(file_path)
-file_path = "/home/passapol/Downloads/SpyEye/Spyeye/SpyEye3.exe"
-testcape(file_path)
-file_path = "/home/passapol/Downloads/SpyEye/Spyeye/SpyEye4.exe"
-testcape(file_path)
+# (ลบ Method MobSF ที่หลุดเข้ามา: scan_file, get_report_json)
+# (ลบ Test Code ท้ายไฟล์)

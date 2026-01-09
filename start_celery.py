@@ -4,21 +4,21 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-print(f"\nRedis Configuration:")
-print(f"  REDIS_HOST: {os.getenv('REDIS_HOST', '127.0.0.1')}")
-print(f"  REDIS_PORT: {os.getenv('REDIS_PORT', '6379')}")
-print(f"  REDIS_PASSWORD: {'***' if os.getenv('REDIS_PASSWORD') else 'None'}")
+print(f"\n[RAMPART-AI] Celery Worker Starter")
+print(f"{'='*30}")
+print(f"Redis Host: {os.getenv('REDIS_HOST', '127.0.0.1')}")
+print(f"OS Platform: {platform.system()}")
 
-print(f"\nPlatform Information:")
-print(f"  OS: {platform.system()}")
-print(f"  Python: {platform.python_version()}")
-
+# ตรวจสอบ OS เพื่อเลือก Pool ที่เหมาะสม
 if platform.system() == 'Windows':
     pool_type = "solo"
-    print(f"  Pool: {pool_type} (Windows compatibility mode)")
+    print(f"Mode: Windows Detected -> Using 'solo' pool")
 else:
-    pool_type = "prefork"
-    print(f"  Pool: {pool_type}")
+    pool_type = "prefork" 
+    # ใช้ prefork ได้เลย เพราะ tasks เราเป็นแบบ non-blocking polling แล้ว
+    print(f"Mode: Linux/Unix -> Using 'prefork' pool (Default)")
 
-print(f"\nStarting Celery Worker with --pool={pool_type}...\n")
-os.system(f"celery -A bgProcessing.celery_app worker --loglevel=info --pool={pool_type}")
+cmd = f"celery -A bgProcessing.celery_app worker --loglevel=info --pool={pool_type}"
+print(f"\nExecuting: {cmd}\n")
+
+os.system(cmd)
