@@ -6,7 +6,7 @@ services:
     container_name: postgres-rampart
     restart: always
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -21,7 +21,7 @@ services:
     container_name: pgadmin-rampart
     restart: always
     ports:
-      - "8080:80"
+      - "8020:80"
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}

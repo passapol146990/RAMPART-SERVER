@@ -8,4 +8,6 @@ celery
 google-genai
 requests
 dotenv
-
+sqlalchemy 
+asyncpg 
+argon2-cffi

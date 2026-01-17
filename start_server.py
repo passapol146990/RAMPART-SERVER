@@ -1,5 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import uvicorn
 import os
 import aiofiles
@@ -220,6 +221,23 @@ async def uploadFile(file: UploadFile = File(...)):
         
         print(f"Upload Error: {e}")
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+
+class LoginUser(BaseModel):
+    username:str
+    password:str
+@app.post('/api/login')
+async def login(user:LoginUser):
+    print(f"Login is : {user}")
+    return {'success':True, 'message':"login successfully."}
+
+class LoginConfirmUser(BaseModel):
+    username:str
+    password:str
+@app.post('/api/login/confirm')
+async def login(user:LoginConfirmUser):
+    print(f"Login confirm is : {user}")
+    return {'success':True, 'message':"login successfully."}
 
 if __name__=="__main__":
     uvicorn.run("start_server:app", host="0.0.0.0", port=8006, reload=True)
