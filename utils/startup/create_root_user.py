@@ -1,5 +1,5 @@
 from sqlalchemy import select
-from db.posrgrass import SessionLocal, User
+from cores.posrgrass import SessionLocal, User
 from dotenv import load_dotenv
 import os
 

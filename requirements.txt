@@ -11,3 +11,4 @@ dotenv
 sqlalchemy 
 asyncpg 
 argon2-cffi
+python-jose

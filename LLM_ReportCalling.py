@@ -1,4 +1,4 @@
-from Calling.GeminiAPI import GeminiAPI
+from calling.GeminiAPI import GeminiAPI
 # import os
 import json
 from utils.clearn_report import clean_mobsf_report

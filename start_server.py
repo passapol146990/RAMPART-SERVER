@@ -1,3 +1,17 @@
+# import sys
+# import os
+
+# def force_utf8():
+#     os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+
+#     try:
+#         sys.stdout.reconfigure(encoding="utf-8")
+#         sys.stderr.reconfigure(encoding="utf-8")
+#     except Exception:
+#         pass  # บาง environment reconfigure ไม่ได้
+
+# force_utf8()
+
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -19,7 +33,7 @@ from celery.result import AsyncResult
 from bgProcessing.celery_app import celery_app
 
 from utils.calculate_hash import calculate_file_hashes, calculate_hash_from_chunks
-from db.redis import redis_client
+from cores.redis import redis_client
 
 app = FastAPI(
     title="RAMPART-AI",
@@ -101,6 +115,9 @@ async def startup_event():
 # ==========================================
 # Endpoints
 # ==========================================
+from routers.auth import router as auth_router
+
+app.include_router(auth_router)
 
 @app.get('/')
 async def root():
@@ -226,21 +243,21 @@ async def uploadFile(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
 
-class LoginUser(BaseModel):
-    username:str
-    password:str
-@app.post('/api/login')
-async def login(user:LoginUser):
-    print(f"Login is : {user}")
-    return {'success':True, 'message':"login successfully."}
+# class LoginUser(BaseModel):
+#     username:str
+#     password:str
+# @app.post('/api/login')
+# async def login(user:LoginUser):
+#     print(f"Login is : {user}")
+#     return {'success':True, 'message':"login successfully."}
 
-class LoginConfirmUser(BaseModel):
-    token:str
-    otp:str
-@app.post('/api/login/confirm')
-async def login(user:LoginConfirmUser):
-    print(f"Login confirm is : {user}")
-    return {'success':True, 'message':"login successfully."}
+# class LoginConfirmUser(BaseModel):
+#     token:str
+#     otp:str
+# @app.post('/api/login/confirm')
+# async def login(user:LoginConfirmUser):
+#     print(f"Login confirm is : {user}")
+#     return {'success':True, 'message':"login successfully."}
 
 if __name__=="__main__":
     uvicorn.run("start_server:app", host="0.0.0.0", port=8006, reload=True)

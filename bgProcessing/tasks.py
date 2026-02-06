@@ -1,8 +1,8 @@
 from bgProcessing.celery_app import celery_app
-from Calling.VirusTotal import VirusTotal
-from Calling.GeminiAPI import GeminiAPI
-from Calling.MobSF import MobSFCall
-from Calling.CAPE import CAPEAnalyzer
+from calling.VirusTotal import VirusTotal
+from calling.GeminiAPI import GeminiAPI
+from calling.MobSF import MobSFCall
+from calling.CAPE import CAPEAnalyzer
 import time
 import json
 import os

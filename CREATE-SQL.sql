@@ -3,7 +3,7 @@ CREATE TABLE "users" (
     "uid" SERIAL PRIMARY KEY,              -- ใช้ SERIAL เพื่อ Auto Increment
     "username" VARCHAR(50) NOT NULL UNIQUE,
     "email" VARCHAR(255) NOT NULL UNIQUE,
-    "password" VARCHAR(255) NOT NULL,      -- เก็บ Hash Password
+    "password" TEXT NOT NULL,      -- เก็บ Hash Password
     "role" VARCHAR(20) DEFAULT 'user',     -- เช่น 'admin', 'user'
     "created_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP -- ใช้ TIMESTAMPTZ เพื่อรองรับ Timezone
 );

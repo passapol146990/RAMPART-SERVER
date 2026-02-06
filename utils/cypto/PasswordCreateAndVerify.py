@@ -3,9 +3,9 @@ from argon2.exceptions import VerifyMismatchError, InvalidHashError
 
 ph = PasswordHasher()
 
-def verify_password(plain_password, hashed_password):
+def verify_password(hashed_password, plain_password):
     try:
-        return ph.verify(plain_password, hashed_password)
+        return ph.verify(hashed_password, plain_password)
     except VerifyMismatchError:
         return False
     except InvalidHashError:

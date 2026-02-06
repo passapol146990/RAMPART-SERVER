@@ -10,7 +10,7 @@ POSTGRES_DB=os.getenv('POSTGRES_DB')
 
 DATABASE_URL = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5433/{POSTGRES_DB}"
 
-engine = create_async_engine(DATABASE_URL, echo=True) # Flase เพื่อปิด log
+engine = create_async_engine(DATABASE_URL, echo=False) # Flase เพื่อปิด log
 SessionLocal = async_sessionmaker(engine)
 
 class Base(DeclarativeBase):
@@ -24,3 +24,4 @@ class User(Base):
     email: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str] = mapped_column()
     role: Mapped[str] = mapped_column()
+    created_at: Mapped[str] = mapped_column()
