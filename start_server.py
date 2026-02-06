@@ -10,14 +10,14 @@ from dotenv import load_dotenv
 import json
 from datetime import datetime
 
+from utils.startup.create_root_user import create_root_user
+
 load_dotenv()
 
-# Import Tasks
 from bgProcessing.tasks import analyze_malware_task
 from celery.result import AsyncResult
 from bgProcessing.celery_app import celery_app
 
-# Import Utils (สมมติว่ามีไฟล์เหล่านี้)
 from utils.calculate_hash import calculate_file_hashes, calculate_hash_from_chunks
 from db.redis import redis_client
 
@@ -95,6 +95,9 @@ def determine_analysis_tool(file_extension):
     else:
         return 'unsupported'
 
+@app.on_event("startup")
+async def startup_event():
+    await create_root_user()
 # ==========================================
 # Endpoints
 # ==========================================
@@ -232,8 +235,8 @@ async def login(user:LoginUser):
     return {'success':True, 'message':"login successfully."}
 
 class LoginConfirmUser(BaseModel):
-    username:str
-    password:str
+    token:str
+    otp:str
 @app.post('/api/login/confirm')
 async def login(user:LoginConfirmUser):
     print(f"Login confirm is : {user}")
