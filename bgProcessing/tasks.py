@@ -28,27 +28,31 @@ redis_client = redis.StrictRedis.from_url(REDIS_URL)
 
 @celery_app.task(bind=True, max_retries=100) 
 def analyze_malware_task(self, file_path: str, file_hashes: dict, total_size: int, analysis_tool: str, previous_results: dict = None, cape_task_id=None):
-    print(total_size)
-    print(type(total_size))
-
-    results = previous_results if previous_results else {}
+    print(f"#######################[ {self.request.id} ]#######################")
     md5 = file_hashes.get('md5', '')
-
-    print(results)
+    # เอาผลการวิเคราะห์เดิมเก็บมา ถ้าไม่มีจะได้ {} แต่ถ้ามีจะไม่วิเคราะห์ซ้ำ
+    results = previous_results if previous_results else {}
+    PREVIOUS = []
+    if isinstance(previous_results, dict):
+        PREVIOUS = list(previous_results.keys())
+    print(f"REPORTED PREVIOUS:{PREVIOUS}")
     
     # ---------------------------------------------------------
-    # PART 1: VirusTotal (Run Once)
+    # PART 1: VirusTotal (Run Once) !!! cape_task_id is None and  สำคัญมากเอาไว้สำหรับ retry cape ในกณี รอการวิเคราะห์ต้องมีไม่งั้นจะเปลือง VT + Mobsf เพราะวนลูปจนกว่า cape จำเสร็จ
     # ---------------------------------------------------------
-    if "virustotal" not in results and "vt_skipped" not in results:
+    if cape_task_id is None and "virustotal" not in results and "vt_skipped" not in results:
         vt = VirusTotal()
-        print(f"[{self.request.id}] Starting VT Analysis: {md5}")
+        print(f"[VT] Starting VT Analysis: {md5}")
         
         if total_size > VIRUSTOTAL_MAX_SIZE:
-            print("File too large for VT upload. Checking hash only.")
+            print("[VT] File too large for VT upload. Checking hash only.")
             rp = vt.get_report_by_hash(md5)
-            print(f"rp : {rp}")
-            if rp['success']: results["virustotal"] = rp["data"]
-            else: results["vt_skipped"] = True
+            if rp['success']: 
+                print(f"[VT] get report success")
+                results["virustotal"] = rp["data"]
+            else:
+                print(f"[VT] vt_skipped") 
+                results["vt_skipped"] = True
         else:
             # Upload & Check
             res = vt.upload_file(file_path=file_path)
@@ -57,15 +61,19 @@ def analyze_malware_task(self, file_path: str, file_hashes: dict, total_size: in
                     time.sleep(5) # VT รอแปปเดียว
                     id_b64 = res['data']['data']['id']
                     rp = vt.get_report_by_base64(id_b64)
-                    if rp['success']: results["virustotal"] = rp["data"]
-                except: pass
+                    if rp['success']: 
+                        print(f"[VT] get report success")
+                        results["virustotal"] = rp["data"]
+                except: 
+                    print(f"[VT] get report failed")
             else:
+                print(f"[VT] vt_skipped")
                 results["vt_skipped"] = True # Mark as done to prevent loop
 
     # ---------------------------------------------------------
     # PART 2: MobSF (Redis Lock + Fire & Forget)
     # ---------------------------------------------------------
-    if analysis_tool == "mobsf":
+    if cape_task_id is None and "mobsf" in analysis_tool:
         mobsf = MobSFCall()
         redis_key = f"mobsf_status:{md5}"
         
@@ -117,24 +125,28 @@ def analyze_malware_task(self, file_path: str, file_hashes: dict, total_size: in
                                 }
                             )
                         else:
+                            print(f"[MobSF] Failed to trigger scan")
                             results["mobsf_error"] = "Failed to trigger scan"
                     else:
-                        results["mobsf_error"] = "Failed to upload"
+                        print(f"[MobSF] Failed to upload")
+                        results["mobsf_error"] = "Failed to upload file not support"
 
     # ---------------------------------------------------------
     # PART 3: CAPE (Check -> Create -> Poll)
     # ---------------------------------------------------------
-    elif analysis_tool == "cape":
+    if "cape" in analysis_tool:
         cape = CAPEAnalyzer()
-        
+        # cape_task_id จะได้ตอนที่ไม่มี ID จะสั่งรันซ้ำในกรณีกำลังวิเคราะห์ 
         if cape_task_id is None:
             # 3.1 First time / Check exist
             print(f"[CAPE] Checking/Submitting file...")
             ckid = cape.cheack_analyer(file_path)
             
             target_id = None
+            countdown = 60
             if ckid and len(ckid) > 0:
                 target_id = ckid[0].get('id')
+                countdown = 1
                 print(f"[CAPE] Found existing ID: {target_id}")
             else:
                 res = cape.create_file_task(file_path, machine="win10")
@@ -142,10 +154,10 @@ def analyze_malware_task(self, file_path: str, file_hashes: dict, total_size: in
                 print(f"[CAPE] Created new task ID: {target_id}")
 
             if target_id:
-                print(f"[CAPE] Waiting for analysis... (Retry in 60s)")
-                # [FIXED] มี args=[] อยู่แล้ว ดีมาก
+                print(f"[CAPE] Waiting for analysis/generate report... (Retry in 60s)")
+                #  ถ้ามี ID จะสั่งรันใหม่อีกรอบ ตรงนี้สำคัญต้องตรวจสอบ VT+Mobsf เพื่อให้ทำซ้ำตาม CAPE
                 raise self.retry(
-                    countdown=60,
+                    countdown=countdown,
                     args=[],
                     kwargs={
                         'file_path': file_path,
@@ -160,20 +172,22 @@ def analyze_malware_task(self, file_path: str, file_hashes: dict, total_size: in
                  results["cape_error"] = "Failed to get CAPE Task ID"
 
         else:
-            # 3.2 Polling
             print(f"[CAPE] Polling ID: {cape_task_id}")
             status = cape.get_task_status(cape_task_id)
-            print(status)
+            print(f"[CAPE] {status}")
             state = status.get('data', 'unknown') if status.get('data') else 'error'
             
             if state == 'reported':
                 print("[CAPE] Finished!")
                 rp = cape.get_report(cape_task_id)
                 if rp['status'] == 'success':
+                    print(f"[CAPE] Report fetch report success")
                     results["cape"] = rp['data']
                 else:
-                    results["cape_error"] = "Report fetch failed"
+                    print(f"[CAPE] Report fetch failed")
+                    results["cape_error"] = "Report fetch report failed"
             elif state in ['failed_analysis', 'error']:
+                print(f"[CAPE] Analysis failed with state: {state}")
                 results["cape_error"] = f"Analysis failed with state: {state}"
             else:
                 print(f"[CAPE] Status: {state}. Retrying in 30s...")

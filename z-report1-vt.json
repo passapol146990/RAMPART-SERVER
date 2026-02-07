@@ -6,49 +6,45 @@
             "self": "https://www.virustotal.com/api/v3/files/d0d4ef735a8bf076d81a6f3651d6bcfd8c69285049add2e6b6bee1276a99c37c"
         },
         "attributes": {
-            "type_description": "Android",
-            "type_tag": "android",
-            "unique_sources": 2,
-            "popular_threat_classification": {
-                "suggested_threat_label": "trojan.hqwar",
-                "popular_threat_name": [
-                    {
-                        "value": "hqwar",
-                        "count": 4
-                    }
-                ],
-                "popular_threat_category": [
-                    {
-                        "value": "trojan",
-                        "count": 9
-                    },
-                    {
-                        "value": "dropper",
-                        "count": 4
-                    }
-                ]
+            "last_analysis_stats": {
+                "malicious": 20,
+                "suspicious": 0,
+                "undetected": 45,
+                "harmless": 0,
+                "timeout": 0,
+                "confirmed-timeout": 0,
+                "failure": 2,
+                "type-unsupported": 9
             },
+            "names": [
+                "d0d4ef735a8bf076d81a6f3651d6bcfd8c69285049add2e6b6bee1276a99c37c.xyz",
+                "d0d4ef735a8bf076d81a6f3651d6bcfd8c69285049add2e6b6bee1276a99c37c.apk",
+                "base.apk"
+            ],
+            "last_analysis_date": 1770481930,
+            "filecondis": {
+                "raw_md5": "9eefe1b0a7bd603edd6869a12191d18b",
+                "dhash": "000000000e0f0400"
+            },
+            "vhash": "549b6fd2148c1fbec5e89d5aff6eb8c4",
+            "type_tags": [
+                "executable",
+                "mobile",
+                "android",
+                "apk"
+            ],
+            "meaningful_name": "d0d4ef735a8bf076d81a6f3651d6bcfd8c69285049add2e6b6bee1276a99c37c.xyz",
+            "tags": [
+                "encrypted",
+                "apk",
+                "android"
+            ],
             "total_votes": {
                 "harmless": 0,
                 "malicious": 2
             },
-            "magic": "Zip archive data, at least v2.0 to extract, compression method=deflate",
-            "picklescan": {
-                "globals": [],
-                "contains_invalid_pickle": false,
-                "issues_count": 0
-            },
-            "last_analysis_stats": {
-                "malicious": 19,
-                "suspicious": 0,
-                "undetected": 39,
-                "harmless": 0,
-                "timeout": 8,
-                "confirmed-timeout": 0,
-                "failure": 1,
-                "type-unsupported": 9
-            },
-            "last_modification_date": 1770470625,
+            "type_description": "Android",
+            "md5": "70ba1a18381bff82b2300b9e5fbc8ea1",
             "bundle_info": {
                 "highest_datetime": "2025-12-19 08:52:56",
                 "lowest_datetime": "2025-12-19 08:52:56",
@@ -88,23 +84,29 @@
                 "type": "APK",
                 "uncompressed_size": 13001498
             },
-            "ssdeep": "196608:44DVbgrGs6kWfMEA36B/uDBzf4KQZ1qXsv:zDVbg+Eo/uDZ4T88v",
-            "sha256": "d0d4ef735a8bf076d81a6f3651d6bcfd8c69285049add2e6b6bee1276a99c37c",
-            "first_submission_date": 1766653334,
-            "type_extension": "apk",
-            "names": [
-                "d0d4ef735a8bf076d81a6f3651d6bcfd8c69285049add2e6b6bee1276a99c37c.apk",
-                "base.apk"
-            ],
+            "magika": "APK",
+            "type_tag": "android",
+            "popular_threat_classification": {
+                "popular_threat_category": [
+                    {
+                        "value": "trojan",
+                        "count": 9
+                    },
+                    {
+                        "value": "dropper",
+                        "count": 4
+                    }
+                ],
+                "popular_threat_name": [
+                    {
+                        "value": "hqwar",
+                        "count": 4
+                    }
+                ],
+                "suggested_threat_label": "trojan.hqwar"
+            },
+            "sha1": "604563ad3f1cae195dcce4f5a9cb3aa1b8ae053a",
             "last_analysis_results": {
-                "Bkav": {
-                    "method": "blacklist",
-                    "engine_name": "Bkav",
-                    "engine_version": "2.0.0.1",
-                    "engine_update": "20260207",
-                    "category": "undetected",
-                    "result": null
-                },
                 "Lionic": {
                     "method": "blacklist",
                     "engine_name": "Lionic",
@@ -117,6 +119,14 @@
                     "method": "blacklist",
                     "engine_name": "MicroWorld-eScan",
                     "engine_version": "14.0.409.0",
+                    "engine_update": "20260207",
+                    "category": "undetected",
+                    "result": null
+                },
+                "ClamAV": {
+                    "method": "blacklist",
+                    "engine_name": "ClamAV",
+                    "engine_version": "1.5.1.0",
                     "engine_update": "20260207",
                     "category": "undetected",
                     "result": null
@@ -141,7 +151,7 @@
                     "method": "blacklist",
                     "engine_name": "Skyhigh",
                     "engine_version": "v2021.2.0+4045",
-                    "engine_update": "20260206",
+                    "engine_update": "20260207",
                     "category": "undetected",
                     "result": null
                 },
@@ -153,11 +163,11 @@
                     "category": "undetected",
                     "result": null
                 },
-                "Zillya": {
+                "VIPRE": {
                     "method": "blacklist",
-                    "engine_name": "Zillya",
-                    "engine_version": "2.0.0.5539",
-                    "engine_update": "20260206",
+                    "engine_name": "VIPRE",
+                    "engine_version": "6.0.0.35",
+                    "engine_update": "20260207",
                     "category": "undetected",
                     "result": null
                 },
@@ -188,7 +198,7 @@
                 "K7GW": {
                     "method": "blacklist",
                     "engine_name": "K7GW",
-                    "engine_version": "14.34.58520",
+                    "engine_version": "14.34.58523",
                     "engine_update": "20260207",
                     "category": "malicious",
                     "result": "Trojan ( 005cf1d81 )"
@@ -196,8 +206,16 @@
                 "K7AntiVirus": {
                     "method": "blacklist",
                     "engine_name": "K7AntiVirus",
-                    "engine_version": "14.34.58521",
+                    "engine_version": "14.34.58524",
                     "engine_update": "20260207",
+                    "category": "undetected",
+                    "result": null
+                },
+                "Baidu": {
+                    "method": "blacklist",
+                    "engine_name": "Baidu",
+                    "engine_version": "1.0.0.2",
+                    "engine_update": "20190318",
                     "category": "undetected",
                     "result": null
                 },
@@ -221,7 +239,7 @@
                     "method": "blacklist",
                     "engine_name": "Symantec",
                     "engine_version": "1.22.0.0",
-                    "engine_update": "20260206",
+                    "engine_update": "20260207",
                     "category": "malicious",
                     "result": "Trojan.Gen.2"
                 },
@@ -232,6 +250,22 @@
                     "engine_update": "20260207",
                     "category": "malicious",
                     "result": "Android/TrojanDropper.Agent.MZU trojan"
+                },
+                "TrendMicro-HouseCall": {
+                    "method": "blacklist",
+                    "engine_name": "TrendMicro-HouseCall",
+                    "engine_version": "24.550.0.1002",
+                    "engine_update": "20260207",
+                    "category": "undetected",
+                    "result": null
+                },
+                "Avast": {
+                    "method": "blacklist",
+                    "engine_name": "Avast",
+                    "engine_version": "23.9.8494.0",
+                    "engine_update": "20260207",
+                    "category": "undetected",
+                    "result": null
                 },
                 "Cynet": {
                     "method": "blacklist",
@@ -269,7 +303,7 @@
                     "method": "blacklist",
                     "engine_name": "ViRobot",
                     "engine_version": "2014.3.20.0",
-                    "engine_update": "20260206",
+                    "engine_update": "20260207",
                     "category": "undetected",
                     "result": null
                 },
@@ -281,10 +315,10 @@
                     "category": "undetected",
                     "result": null
                 },
-                "Emsisoft": {
+                "Sophos": {
                     "method": "blacklist",
-                    "engine_name": "Emsisoft",
-                    "engine_version": "2024.8.0.61147",
+                    "engine_name": "Sophos",
+                    "engine_version": "3.3.1.0",
                     "engine_update": "20260207",
                     "category": "undetected",
                     "result": null
@@ -305,10 +339,18 @@
                     "category": "undetected",
                     "result": null
                 },
-                "VIPRE": {
+                "Zillya": {
                     "method": "blacklist",
-                    "engine_name": "VIPRE",
-                    "engine_version": "6.0.0.35",
+                    "engine_name": "Zillya",
+                    "engine_version": "2.0.0.5539",
+                    "engine_update": "20260206",
+                    "category": "undetected",
+                    "result": null
+                },
+                "TrendMicro": {
+                    "method": "blacklist",
+                    "engine_name": "TrendMicro",
+                    "engine_version": "24.550.0.1002",
                     "engine_update": "20260207",
                     "category": "undetected",
                     "result": null
@@ -329,10 +371,10 @@
                     "category": "undetected",
                     "result": null
                 },
-                "Sophos": {
+                "Emsisoft": {
                     "method": "blacklist",
-                    "engine_name": "Sophos",
-                    "engine_version": "3.3.1.0",
+                    "engine_name": "Emsisoft",
+                    "engine_version": "2024.8.0.61147",
                     "engine_update": "20260207",
                     "category": "undetected",
                     "result": null
@@ -340,18 +382,18 @@
                 "huorong": {
                     "method": "blacklist",
                     "engine_name": "huorong",
-                    "engine_version": "7d67595:7d67595:17658e4:17658e4",
-                    "engine_update": "20260206",
-                    "category": "undetected",
-                    "result": null
-                },
-                "GData": {
-                    "method": "blacklist",
-                    "engine_name": "GData",
-                    "engine_version": "GD:27.43456AVA:64.30623",
+                    "engine_version": "05e2752:05e2752:17658e4:17658e4",
                     "engine_update": "20260207",
                     "category": "undetected",
                     "result": null
+                },
+                "Avast-Mobile": {
+                    "method": "blacklist",
+                    "engine_name": "Avast-Mobile",
+                    "engine_version": "260207-04",
+                    "engine_update": "20260207",
+                    "category": "malicious",
+                    "result": "APK:CRepMalware [Trj]"
                 },
                 "Jiangmin": {
                     "method": "blacklist",
@@ -381,7 +423,7 @@
                     "method": "blacklist",
                     "engine_name": "Avira",
                     "engine_version": "8.3.3.24",
-                    "engine_update": "20260206",
+                    "engine_update": "20260207",
                     "category": "malicious",
                     "result": "TR/AVI.Bank.qahkv"
                 },
@@ -449,18 +491,18 @@
                     "category": "undetected",
                     "result": null
                 },
-                "Avast-Mobile": {
+                "GData": {
                     "method": "blacklist",
-                    "engine_name": "Avast-Mobile",
-                    "engine_version": "260207-04",
+                    "engine_name": "GData",
+                    "engine_version": "GD:27.43458AVA:64.30624",
                     "engine_update": "20260207",
-                    "category": "malicious",
-                    "result": "APK:CRepMalware [Trj]"
+                    "category": "undetected",
+                    "result": null
                 },
                 "Google": {
                     "method": "blacklist",
                     "engine_name": "Google",
-                    "engine_version": "1770463882",
+                    "engine_version": "1770476469",
                     "engine_update": "20260207",
                     "category": "undetected",
                     "result": null
@@ -529,6 +571,14 @@
                     "category": "undetected",
                     "result": null
                 },
+                "TrellixENS": {
+                    "method": "blacklist",
+                    "engine_name": "TrellixENS",
+                    "engine_version": "6.0.6.653",
+                    "engine_update": "20260207",
+                    "category": "malicious",
+                    "result": "Artemis!70BA1A18381B"
+                },
                 "Ikarus": {
                     "method": "blacklist",
                     "engine_name": "Ikarus",
@@ -537,6 +587,14 @@
                     "category": "malicious",
                     "result": "Trojan-Dropper.AndroidOS.Agent"
                 },
+                "MaxSecure": {
+                    "method": "blacklist",
+                    "engine_name": "MaxSecure",
+                    "engine_version": "1.0.0.1",
+                    "engine_update": "20260206",
+                    "category": "undetected",
+                    "result": null
+                },
                 "Fortinet": {
                     "method": "blacklist",
                     "engine_name": "Fortinet",
@@ -544,6 +602,14 @@
                     "engine_update": "20260207",
                     "category": "malicious",
                     "result": "Android/Agent.MZU!tr"
+                },
+                "AVG": {
+                    "method": "blacklist",
+                    "engine_name": "AVG",
+                    "engine_version": "23.9.8494.0",
+                    "engine_update": "20260207",
+                    "category": "undetected",
+                    "result": null
                 },
                 "Panda": {
                     "method": "blacklist",
@@ -561,68 +627,12 @@
                     "category": "undetected",
                     "result": null
                 },
-                "Baidu": {
+                "Bkav": {
                     "method": "blacklist",
-                    "engine_name": "Baidu",
-                    "engine_version": "1.0.0.2",
-                    "engine_update": "20190318",
-                    "category": "timeout",
-                    "result": null
-                },
-                "TrendMicro": {
-                    "method": "blacklist",
-                    "engine_name": "TrendMicro",
-                    "engine_version": "24.550.0.1002",
+                    "engine_name": "Bkav",
+                    "engine_version": "2.0.0.1",
                     "engine_update": "20260207",
-                    "category": "timeout",
-                    "result": null
-                },
-                "TrendMicro-HouseCall": {
-                    "method": "blacklist",
-                    "engine_name": "TrendMicro-HouseCall",
-                    "engine_version": "24.550.0.1002",
-                    "engine_update": "20260207",
-                    "category": "timeout",
-                    "result": null
-                },
-                "Avast": {
-                    "method": "blacklist",
-                    "engine_name": "Avast",
-                    "engine_version": "23.9.8494.0",
-                    "engine_update": "20260207",
-                    "category": "timeout",
-                    "result": null
-                },
-                "ClamAV": {
-                    "method": "blacklist",
-                    "engine_name": "ClamAV",
-                    "engine_version": "1.5.1.0",
-                    "engine_update": "20260207",
-                    "category": "timeout",
-                    "result": null
-                },
-                "TrellixENS": {
-                    "method": "blacklist",
-                    "engine_name": "TrellixENS",
-                    "engine_version": "6.0.6.653",
-                    "engine_update": "20260206",
-                    "category": "timeout",
-                    "result": null
-                },
-                "MaxSecure": {
-                    "method": "blacklist",
-                    "engine_name": "MaxSecure",
-                    "engine_version": "1.0.0.1",
-                    "engine_update": "20260206",
-                    "category": "timeout",
-                    "result": null
-                },
-                "AVG": {
-                    "method": "blacklist",
-                    "engine_name": "AVG",
-                    "engine_version": "23.9.8494.0",
-                    "engine_update": "20260207",
-                    "category": "timeout",
+                    "category": "failure",
                     "result": null
                 },
                 "ALYac": {
@@ -633,18 +643,18 @@
                     "category": "failure",
                     "result": null
                 },
+                "Elastic": {
+                    "method": "blacklist",
+                    "engine_name": "Elastic",
+                    "engine_version": "4.0.248",
+                    "engine_update": "20260203",
+                    "category": "type-unsupported",
+                    "result": null
+                },
                 "DeepInstinct": {
                     "method": "blacklist",
                     "engine_name": "DeepInstinct",
                     "engine_version": "5.0.0.8",
-                    "engine_update": "20260207",
-                    "category": "type-unsupported",
-                    "result": null
-                },
-                "tehtris": {
-                    "method": "blacklist",
-                    "engine_name": "tehtris",
-                    "engine_version": null,
                     "engine_update": "20260207",
                     "category": "type-unsupported",
                     "result": null
@@ -681,19 +691,19 @@
                     "category": "type-unsupported",
                     "result": null
                 },
-                "Elastic": {
-                    "method": "blacklist",
-                    "engine_name": "Elastic",
-                    "engine_version": "4.0.248",
-                    "engine_update": "20260203",
-                    "category": "type-unsupported",
-                    "result": null
-                },
                 "SentinelOne": {
                     "method": "blacklist",
                     "engine_name": "SentinelOne",
                     "engine_version": "7.5.3.1",
                     "engine_update": "20251224",
+                    "category": "type-unsupported",
+                    "result": null
+                },
+                "tehtris": {
+                    "method": "blacklist",
+                    "engine_name": "tehtris",
+                    "engine_version": null,
+                    "engine_update": "20260207",
                     "category": "type-unsupported",
                     "result": null
                 },
@@ -706,28 +716,6 @@
                     "result": null
                 }
             },
-            "trid": [
-                {
-                    "file_type": "Android Package",
-                    "probability": 48.6
-                },
-                {
-                    "file_type": "Opera Widget",
-                    "probability": 25.2
-                },
-                {
-                    "file_type": "Sweet Home 3D Design (generic)",
-                    "probability": 18.9
-                },
-                {
-                    "file_type": "ZIP compressed archive",
-                    "probability": 7.2
-                }
-            ],
-            "last_analysis_date": 1770468759,
-            "size": 8676736,
-            "times_submitted": 5,
-            "reputation": -12,
             "androguard": {
                 "certificate": {
                     "Subject": {
@@ -749,28 +737,41 @@
                 "AndroguardVersion": "4.1.2",
                 "AndroidApplicationInfo": "APK"
             },
-            "magika": "APK",
-            "type_tags": [
-                "executable",
-                "mobile",
-                "android",
-                "apk"
+            "trid": [
+                {
+                    "file_type": "Android Package",
+                    "probability": 48.6
+                },
+                {
+                    "file_type": "Opera Widget",
+                    "probability": 25.2
+                },
+                {
+                    "file_type": "Sweet Home 3D Design (generic)",
+                    "probability": 18.9
+                },
+                {
+                    "file_type": "ZIP compressed archive",
+                    "probability": 7.2
+                }
             ],
+            "size": 8676736,
+            "type_extension": "apk",
             "tlsh": "T1BB962243FBA8E99EC4F7C2324AB541755146AD168B43E2476D28736C38BBDE08B46FC4",
-            "md5": "70ba1a18381bff82b2300b9e5fbc8ea1",
-            "tags": [
-                "android",
-                "encrypted",
-                "apk"
-            ],
-            "filecondis": {
-                "raw_md5": "9eefe1b0a7bd603edd6869a12191d18b",
-                "dhash": "000000000e0f0400"
+            "last_modification_date": 1770483817,
+            "reputation": -12,
+            "ssdeep": "196608:44DVbgrGs6kWfMEA36B/uDBzf4KQZ1qXsv:zDVbg+Eo/uDZ4T88v",
+            "times_submitted": 10,
+            "last_submission_date": 1770483816,
+            "magic": "Zip archive data, at least v2.0 to extract, compression method=deflate",
+            "unique_sources": 2,
+            "first_submission_date": 1766653334,
+            "picklescan": {
+                "globals": [],
+                "issues_count": 0,
+                "contains_invalid_pickle": false
             },
-            "last_submission_date": 1770470623,
-            "vhash": "549b6fd2148c1fbec5e89d5aff6eb8c4",
-            "meaningful_name": "d0d4ef735a8bf076d81a6f3651d6bcfd8c69285049add2e6b6bee1276a99c37c.apk",
-            "sha1": "604563ad3f1cae195dcce4f5a9cb3aa1b8ae053a"
+            "sha256": "d0d4ef735a8bf076d81a6f3651d6bcfd8c69285049add2e6b6bee1276a99c37c"
         }
     }
 }

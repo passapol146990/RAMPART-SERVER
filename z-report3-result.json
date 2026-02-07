@@ -2,10 +2,11 @@
     "virustotal": {
         "file_info": {
             "names": [
+                "d0d4ef735a8bf076d81a6f3651d6bcfd8c69285049add2e6b6bee1276a99c37c.xyz",
                 "d0d4ef735a8bf076d81a6f3651d6bcfd8c69285049add2e6b6bee1276a99c37c.apk",
                 "base.apk"
             ],
-            "meaningful_name": "d0d4ef735a8bf076d81a6f3651d6bcfd8c69285049add2e6b6bee1276a99c37c.apk",
+            "meaningful_name": "d0d4ef735a8bf076d81a6f3651d6bcfd8c69285049add2e6b6bee1276a99c37c.xyz",
             "type": "Android",
             "size": 8676736,
             "hashes": {
@@ -21,9 +22,9 @@
             "is_trusted_developer": false
         },
         "scan_summary": {
-            "malicious_count": 19,
+            "malicious_count": 20,
             "suspicious_count": 0,
-            "undetected_count": 39,
+            "undetected_count": 45,
             "harmless_count": 0,
             "total_scanners": 76,
             "reputation": -12,
@@ -45,12 +46,13 @@
                 "Kaspersky: HEUR:Trojan-Dropper.AndroidOS.Hqwar.gy",
                 "Alibaba: TrojanDropper:Android/Hqwar.1f64f51f",
                 "F-Secure: Trojan:Android/Corrupted.BA",
+                "Avast-Mobile: APK:CRepMalware [Trj]",
                 "Varist: ABTrojan.KNNG-",
                 "Avira: TR/AVI.Bank.qahkv",
-                "Avast-Mobile: APK:CRepMalware [Trj]",
                 "BitDefenderFalx: Android.Riskware.Marcher.aAGD",
                 "AhnLab-V3: Trojan/Android.Banker.1247637",
                 "Tencent: a.privacy.SpyNote",
+                "TrellixENS: Artemis!70BA1A18381B",
                 "Ikarus: Trojan-Dropper.AndroidOS.Agent",
                 "Fortinet: Android/Agent.MZU!tr"
             ],
@@ -62,10 +64,98 @@
         },
         "permissions": [],
         "tags": [
-            "android",
             "encrypted",
-            "apk"
+            "apk",
+            "android"
         ]
     },
-    "mobsf_error": "Failed to upload"
+    "mobsf_error": "Failed to upload file not support",
+    "cape": {
+        "source": "CAPE Sandbox",
+        "score": 0.0,
+        "malware_family": null,
+        "mitre_attack_techniques": [],
+        "critical_signatures": [],
+        "network_behavior": {
+            "http_traffic": [],
+            "dns_queries": [],
+            "ip_connections": [
+                {
+                    "dst_ip": "122.155.243.145",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                },
+                {
+                    "dst_ip": "110.164.11.107",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                },
+                {
+                    "dst_ip": "23.100.109.78",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                },
+                {
+                    "dst_ip": "40.126.35.85",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                },
+                {
+                    "dst_ip": "110.164.21.136",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                },
+                {
+                    "dst_ip": "150.171.28.11",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                },
+                {
+                    "dst_ip": "150.171.27.10",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                },
+                {
+                    "dst_ip": "13.107.213.59",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                },
+                {
+                    "dst_ip": "172.66.2.5",
+                    "country": "unknown",
+                    "ports": [
+                        80
+                    ]
+                },
+                {
+                    "dst_ip": "20.52.64.201",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                }
+            ]
+        },
+        "system_behavior": {
+            "files_written": [],
+            "registry_keys_modified": [],
+            "commands_executed": []
+        }
+    }
 }

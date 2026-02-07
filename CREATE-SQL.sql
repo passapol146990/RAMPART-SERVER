@@ -33,6 +33,7 @@ CREATE TABLE "logs" (
 -- 4. สร้าง Table Upload (User 1 คน มีหลาย Upload, File 1 ไฟล์ ถูก Upload ได้หลายครั้ง)
 CREATE TABLE "uploads" (
     "up_id" SERIAL PRIMARY KEY,
+    "task_id" TEXT,
     "uid" INTEGER NOT NULL,
     "fid" INTEGER NOT NULL,
     "privacy" BOOLEAN DEFAULT TRUE,        -- True = Private, False = Public

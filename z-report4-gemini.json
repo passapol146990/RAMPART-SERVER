@@ -1,7 +1,7 @@
 {
     "app_metadata": {
         "name": "d0d4ef735a8bf076d81a6f3651d6bcfd8c69285049add2e6b6bee1276a99c37c.apk",
-        "package": null,
+        "package": "null",
         "type": "Android"
     },
     "security_assessment": {
@@ -10,9 +10,10 @@
         "verdict_color": "red"
     },
     "user_recommendation": "ห้ามติดตั้งเด็ดขาด",
-    "analysis_summary": "พบมัลแวร์ประเภท Trojan และ Trojan Dropper หลายชนิดจากผลการสแกนโดย Antivirus จำนวนมาก",
+    "analysis_summary": "ไฟล์ APK นี้ถูกตรวจพบว่าเป็นมัลแวร์ประเภท Trojan, Dropper และ Banker จากหลายแหล่ง มีความเสี่ยงสูงต่อข้อมูลส่วนตัวและการเงิน",
     "risk_indicators": [
-        "ตรวจพบว่าเป็นมัลแวร์ (Trojan, Trojan Dropper, Banker, SpyNote) โดย 19 Antivirus engines",
-        "คะแนนชื่อเสียงใน Virustotal ติดลบ (-12) และชุมชนโหวตว่าเป็นอันตราย"
+        "ตรวจพบว่าเป็นมัลแวร์ (Trojan, Dropper, Banker, SpyNote) โดย 20 แอนติไวรัส",
+        "มีชื่อเสียงไม่ดีในชุมชน VirusTotal (reputation: -12, 2 malicious votes)",
+        "มีการเชื่อมต่อเครือข่ายที่น่าสงสัยไปยัง IP ที่ไม่ทราบที่มาจำนวนมาก"
     ]
 }
