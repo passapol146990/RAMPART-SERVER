@@ -1,0 +1,71 @@
+{
+    "virustotal": {
+        "file_info": {
+            "names": [
+                "d0d4ef735a8bf076d81a6f3651d6bcfd8c69285049add2e6b6bee1276a99c37c.apk",
+                "base.apk"
+            ],
+            "meaningful_name": "d0d4ef735a8bf076d81a6f3651d6bcfd8c69285049add2e6b6bee1276a99c37c.apk",
+            "type": "Android",
+            "size": 8676736,
+            "hashes": {
+                "md5": "70ba1a18381bff82b2300b9e5fbc8ea1",
+                "sha1": "604563ad3f1cae195dcce4f5a9cb3aa1b8ae053a",
+                "sha256": "d0d4ef735a8bf076d81a6f3651d6bcfd8c69285049add2e6b6bee1276a99c37c"
+            }
+        },
+        "app_identity": {
+            "package_name": null,
+            "developer_signer": "j4velin development",
+            "is_verified": null,
+            "is_trusted_developer": false
+        },
+        "scan_summary": {
+            "malicious_count": 19,
+            "suspicious_count": 0,
+            "undetected_count": 39,
+            "harmless_count": 0,
+            "total_scanners": 76,
+            "reputation": -12,
+            "community_votes": {
+                "harmless": 0,
+                "malicious": 2
+            }
+        },
+        "threats_found": {
+            "malicious": [
+                "Lionic: Trojan.AndroidOS.Hqwar.C!c",
+                "CTX: apk.trojan.hqwar",
+                "K7GW: Trojan ( 005cf1d81 )",
+                "VirIT: Android.Trj.Agent.HNV",
+                "SymantecMobileInsight: AppRisk:Generisk",
+                "Symantec: Trojan.Gen.2",
+                "ESET-NOD32: Android/TrojanDropper.Agent.MZU trojan",
+                "Cynet: Malicious (score: 99)",
+                "Kaspersky: HEUR:Trojan-Dropper.AndroidOS.Hqwar.gy",
+                "Alibaba: TrojanDropper:Android/Hqwar.1f64f51f",
+                "F-Secure: Trojan:Android/Corrupted.BA",
+                "Varist: ABTrojan.KNNG-",
+                "Avira: TR/AVI.Bank.qahkv",
+                "Avast-Mobile: APK:CRepMalware [Trj]",
+                "BitDefenderFalx: Android.Riskware.Marcher.aAGD",
+                "AhnLab-V3: Trojan/Android.Banker.1247637",
+                "Tencent: a.privacy.SpyNote",
+                "Ikarus: Trojan-Dropper.AndroidOS.Agent",
+                "Fortinet: Android/Agent.MZU!tr"
+            ],
+            "suspicious": []
+        },
+        "security_analysis": {
+            "sigma_rules": {},
+            "sandbox_results": []
+        },
+        "permissions": [],
+        "tags": [
+            "android",
+            "encrypted",
+            "apk"
+        ]
+    },
+    "mobsf_error": "Failed to upload"
+}

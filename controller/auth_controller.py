@@ -15,6 +15,14 @@ def generate_device_hash(user_agent: str, ip: str) -> str:
     raw = f"{user_agent}:{ip}"
     return hashlib.sha256(raw.encode()).hexdigest()
 
+def generate_accesstoken(username:str, ACCESS_TOKEN_EXPIRE_MINUTES:int):
+    access_token = create_token(
+        subject=username,
+        token_type="access",
+        expires_minutes=ACCESS_TOKEN_EXPIRE_MINUTES,
+    )
+    return access_token
+
 LOGIN_TTL = 300
 OTP_ATTEMPT_LIMIT = 5
 
@@ -33,8 +41,11 @@ async def login_controller(user: LoginUser, user_agent: str, ip: str):
     device_key = f"device:{db_user.username}:{device_hash}"
 
     if redis_client.exists(device_key):
+        ACCESS_TOKEN_EXPIRE_MINUTES = 60*24*7
+        access_token = generate_accesstoken(db_user.username,ACCESS_TOKEN_EXPIRE_MINUTES)
         return {
             "success": True,
+            "token": access_token,
             "message": "Login successful (trusted device)",
             "otp_required": False
         }
@@ -78,6 +89,8 @@ async def login_controller(user: LoginUser, user_agent: str, ip: str):
 async def login_confirm_controller(data:LoginConfirmUser, user_agent: str, ip: str):
     try:
         payload = decode_token(data.token)
+        if payload["type"] != 'login_confirm':
+            return {"success": False, "message": "Token is not support"}
     except ValueError:
         return {"success": False, "message": "Invalid or expired token"}
 
@@ -114,12 +127,9 @@ async def login_confirm_controller(data:LoginConfirmUser, user_agent: str, ip: s
         60 * 60 * 24 * 7,
         "trusted"
     )
-    ACCESS_TOKEN_EXPIRE_MINUTES = 60
-    access_token = create_token(
-        subject=username,
-        token_type="access",
-        expires_minutes=ACCESS_TOKEN_EXPIRE_MINUTES,
-    )
+
+    ACCESS_TOKEN_EXPIRE_MINUTES = 60*24*7
+    access_token = generate_accesstoken(username,ACCESS_TOKEN_EXPIRE_MINUTES)
 
     # cleanup
     redis_client.delete(

@@ -5,19 +5,20 @@ CREATE TABLE "users" (
     "email" VARCHAR(255) NOT NULL UNIQUE,
     "password" TEXT NOT NULL,      -- เก็บ Hash Password
     "role" VARCHAR(20) DEFAULT 'user',     -- เช่น 'admin', 'user'
+    "status" VARCHAR(50) DEFAULT 'ACTIVE' -- ACTIVE, BANNED
     "created_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP -- ใช้ TIMESTAMPTZ เพื่อรองรับ Timezone
 );
 
 -- 2. สร้าง Table File (ต้องสร้างก่อน เพราะ Upload และ Analysis อ้างอิงถึง)
 CREATE TABLE "files" (
     "fid" SERIAL PRIMARY KEY,
-    "file_name" VARCHAR(255) NOT NULL,
-    "file_path" TEXT NOT NULL,             -- Path ยาวๆ ควรใช้ TEXT
-    "file_type" VARCHAR(100),              -- MIME type เช่น application/pdf
-    "file_size" BIGINT,                    -- ขนาดไฟล์หน่วย Bytes
-    "md5" VARCHAR(32),                     -- MD5 hash มักยาว 32 ตัวอักษร
+    "file_hash" TEXT NOT NULL UNIQUE,
+    "file_path" TEXT NOT NULL,              -- path ที่เก็บไฟล์จริง
+    "file_type" TEXT,               -- MIME type เช่น application/pdf
+    "file_size" BIGINT NOT NULL,             -- ขนาดไฟล์ (bytes)
     "created_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
 
 -- 3. สร้าง Table Log (User 1 คน มีหลาย Log)
 CREATE TABLE "logs" (

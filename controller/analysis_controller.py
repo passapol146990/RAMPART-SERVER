@@ -3,11 +3,14 @@ import os
 from pathlib import Path
 from fastapi import UploadFile, HTTPException
 from bgProcessing.tasks import analyze_malware_task
+from cores.posrgrass import SessionLocal, User
+from services.analy_service import create_file, get_file_by_hash
 from utils.calculate_hash import calculate_file_hashes, calculate_hash_from_chunks
 import os
 import aiofiles
 from pathlib import Path
 from cores.redis import redis_client
+from sqlalchemy import select
 
 UPLOAD_DIR = Path("temps_files")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -67,9 +70,35 @@ def determine_analysis_tool(file_extension):
         return 'unsupported'
 
 
-async def upload_file_controller(file: UploadFile):
+async def upload_file_controller(file: UploadFile, username:str):
+    # ตรวจสอบ status ผู้ใช้
+    async with SessionLocal() as session:
+        result = await session.execute(
+            select(User).where(User.username == username)
+        )
+        user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "success": False,
+                "code": "USER_NOT_FOUND",
+                "message": "User not found"
+            }
+        )
+
+    if user.status != "ACTIVE":
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "success": False,
+                "code": f"USER IS : {user.status}, USER_NOT_ACTIVE",
+                "message": "User account is not active"
+            }
+        )
+    # เริ่มตรวจสอบค่า hash ของไฟล์และกระบวนการตรวจสอบอื่นๆ
     file_path = None
-    file_already_exists = False
+    file_already_exists = False,
     
     try:
         original_filename = file.filename
@@ -86,49 +115,36 @@ async def upload_file_controller(file: UploadFile):
 
         # 2. Hash Calculation
         sha256_hash = calculate_hash_from_chunks(chunks)
-        # 3. Check Redis for Deduplication
-        existing_file_info = get_file_info_from_redis(sha256_hash)
-        print(f"existing_file_info : {existing_file_info}")
 
-        if existing_file_info:
-            file_already_exists = True
-            file_path = Path(existing_file_info['path'])
-            file_hashes = {
-                'md5': existing_file_info['md5'],
-                'sha1': existing_file_info['sha1'],
-                'sha256': existing_file_info['sha256']
-            }
-            total_size = existing_file_info['file_size']
-
-            # Case: ข้อมูลมีใน Redis แต่ไฟล์จริงหายไป -> สร้างใหม่
-            if not file_path.exists():
-                file_path = UPLOAD_DIR / original_filename
-                async with aiofiles.open(file_path, 'wb') as f:
+        # Check database
+        async with SessionLocal() as session:
+            existing_file = await get_file_by_hash(session, sha256_hash)
+            if existing_file:
+                print(f"existing_file ==> {existing_file.file_path}")
+                file_path = Path(existing_file.file_path)
+                if not file_path.exists():
+                    async with aiofiles.open(file_path, 'wb') as f:
+                        for chunk in chunks:
+                            await f.write(chunk)
+                    file_hashes = calculate_file_hashes(file_path)
+                    file_already_exists = False
+            else:
+                file_ext = os.path.splitext(file.filename)[1]
+                file_path = UPLOAD_DIR / f"{sha256_hash}{file_ext}"
+                async with aiofiles.open(file_path, "wb") as f:
                     for chunk in chunks:
                         await f.write(chunk)
-                
-                # Re-calculate hash to be safe
-                file_hashes = calculate_file_hashes(file_path)
-                save_file_info_to_redis(sha256_hash, file_path, original_filename, file_hashes, total_size, file_extension)
-                file_already_exists = False
+
+                # Save to database
+                db_file = await create_file(
+                    session,
+                    file_hash=sha256_hash,
+                    file_path=str(file_path),
+                    file_type=file.content_type,
+                    file_size=total_size
+                )
+                print(f"uploaded ==> {sha256_hash}{file_ext}")
         
-        else:
-            # Case: New File
-            file_path = UPLOAD_DIR / original_filename
-            
-            # Handle Duplicate Filenames on Disk
-            if file_path.exists():
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                filename_without_ext = os.path.splitext(original_filename)[0]
-                file_path = UPLOAD_DIR / f"{filename_without_ext}_{timestamp}{file_extension}"
-
-            async with aiofiles.open(file_path, 'wb') as f:
-                for chunk in chunks:
-                    await f.write(chunk)
-
-            file_hashes = calculate_file_hashes(file_path)
-            save_file_info_to_redis(sha256_hash, file_path, original_filename, file_hashes, total_size, file_extension)
-
         # 4. Determine Tool
         analysis_tool = determine_analysis_tool(file_extension)
 
@@ -139,6 +155,7 @@ async def upload_file_controller(file: UploadFile):
                 status_code=400, 
                 detail=f"Unsupported file type: {file_extension}. Supported: {MOBSF_SUPPORTED_EXTENSIONS + CAPE_SUPPORTED_EXTENSIONS}"
             )
+        return {}
 
         # 5. Dispatch to Celery
         total_size = int(total_size)
@@ -158,11 +175,15 @@ async def upload_file_controller(file: UploadFile):
     except HTTPException:
         raise # ปล่อยผ่านให้ FastAPI จัดการ response
     except Exception as e:
-        # Cleanup: ลบไฟล์ถ้าเกิด Error ระหว่าง process แล้วไฟล์ถูกสร้างขึ้นมาใหม่
-        if file_path and file_path.exists() and not file_already_exists:
-            try:
-                os.remove(file_path)
-            except: pass
-        
+        # if isinstance(file_path, Path) and file_path.exists() and not file_already_exists:
+        #     try:
+        #         file_path.unlink()
+        #     except Exception as cleanup_err:
+        #         print("Cleanup error:", cleanup_err)
+
         print(f"Upload Error: {e}")
-        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal Server Error: {str(e)}"
+        )
+
