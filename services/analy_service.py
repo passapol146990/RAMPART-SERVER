@@ -1,7 +1,8 @@
 from typing import List, Optional
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from cores.models_class import Analysis, Files, Uploads
+from sqlalchemy.orm import selectinload
+from cores.models_class import Analysis, Files, Reports, Uploads
 
 async def get_file_by_hash(
     session: AsyncSession,
@@ -117,4 +118,23 @@ async def get_table_analy(
     )
     return result.scalar_one_or_none()
 
+async def get_analy_by_task_id(
+    session: AsyncSession,
+    task_id: str
+) -> Analysis | None:
+    result = await session.execute(
+        select(Analysis).where(Analysis.task_id == task_id)
+    )
+    return result.scalar_one_or_none()
+
+async def get_report_by_aid(
+    session: AsyncSession,
+    aid: int
+) -> Reports | None:
+    stmt = (
+        select(Reports)
+        .where(Reports.aid == aid)
+    )
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none()
 

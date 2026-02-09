@@ -12,6 +12,7 @@ router = APIRouter(
 async def login(user: LoginUser, request: Request):
     user_agent = request.headers.get("user-agent", "")
     ip = request.client.host if request.client else "unknown"
+    print(user_agent, ip)
     return await login_controller(user, user_agent, ip)
 
 
@@ -25,11 +26,10 @@ async def login_confirm(data: LoginConfirmUser, request: Request):
 @router.post("/login/access")
 async def access_token(data: AccessToken):
     try:
-        username = verify_access_token(data.token)
+        user = verify_access_token(data.token)
     except ValueError as e:
         return {
             "success": False,
             "message": str(e)
         }
-
-    return await access_token_controller(username)
+    return await access_token_controller(user)

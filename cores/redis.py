@@ -18,8 +18,7 @@ try:
     redis_client.ping()
     print(f"[/] Connected to Redis successfully at {REDIS_HOST}:{REDIS_PORT}.")
 
-    # # await redis.flushall()
-    # # redis_client.flushall() 
+    # redis_client.flushall()
     # 
     # all_keys = redis_client.keys("*")
     # print(f"Total keys found: {len(all_keys)}")

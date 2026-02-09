@@ -15,8 +15,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from utils.startup.create_root_user import create_root_user
-from celery.result import AsyncResult
-from bgProcessing.celery_app import celery_app
 from dotenv import load_dotenv
 import uvicorn
 load_dotenv()
@@ -51,23 +49,23 @@ app.include_router(analy_router)
 async def root():
     return { "success": True, "message": "RAMPART-AI API is running" }
 
-@app.get('/api/task/{task_id}')
-async def get_task_status(task_id: str):
-    task_result = AsyncResult(task_id, app=celery_app)
+# @app.get('/api/task/{task_id}')
+# async def get_task_status(task_id: str):
+#     task_result = AsyncResult(task_id, app=celery_app)
     
-    # State handling เหมือนเดิม...
-    if task_result.state == 'PENDING':
-        response = {"task_id": task_id, "status": "pending", "message": "Task is waiting"}
-    elif task_result.state == 'STARTED':
-        response = {"task_id": task_id, "status": "started", "message": "Processing"}
-    elif task_result.state == 'SUCCESS':
-        response = {"task_id": task_id, "status": "success", "result": task_result.result}
-    elif task_result.state == 'FAILURE':
-        response = {"task_id": task_id, "status": "failed", "error": str(task_result.info)}
-    else:
-        response = {"task_id": task_id, "status": task_result.state.lower()}
+#     # State handling เหมือนเดิม...
+#     if task_result.state == 'PENDING':
+#         response = {"task_id": task_id, "status": "pending", "message": "Task is waiting"}
+#     elif task_result.state == 'STARTED':
+#         response = {"task_id": task_id, "status": "started", "message": "Processing"}
+#     elif task_result.state == 'SUCCESS':
+#         response = {"task_id": task_id, "status": "success", "result": task_result.result}
+#     elif task_result.state == 'FAILURE':
+#         response = {"task_id": task_id, "status": "failed", "error": str(task_result.info)}
+#     else:
+#         response = {"task_id": task_id, "status": task_result.state.lower()}
 
-    return response
+#     return response
 
 # @app.post('/api/upload')
 # async def uploadFile(file: UploadFile = File(...)):

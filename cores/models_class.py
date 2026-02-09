@@ -135,6 +135,7 @@ class Analysis(Base):
         "Reports",
         back_populates="analysis",
         uselist=False,
+        lazy="selectin",
         cascade="all, delete-orphan"
     )
 

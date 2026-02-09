@@ -6,8 +6,8 @@ def verify_access_token(token: str) -> str:
     if get_token_type(payload) != "access":
         raise ValueError("Invalid token type")
 
-    username = get_token_subject(payload)
-    if not username:
+    uid = get_token_subject(payload)
+    if not uid:
         raise ValueError("Invalid token payload")
 
-    return username
+    return uid

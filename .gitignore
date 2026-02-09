@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+z-report*
+
+
 # Ignore JSON files in Files/report directory
 Files/report/mobsf/*.json
 Files/report/mobsf/re/*.json

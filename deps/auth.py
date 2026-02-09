@@ -14,8 +14,8 @@ async def require_access_token(
             }
         )
 
-    username = verify_access_token(x_access_token)
-    if not username:
+    veri = verify_access_token(x_access_token)
+    if not veri:
         raise HTTPException(
             status_code=401,
             detail={
@@ -25,4 +25,4 @@ async def require_access_token(
             }
         )
 
-    return username
+    return veri
