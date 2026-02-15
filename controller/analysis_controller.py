@@ -1,6 +1,7 @@
 from datetime import datetime
 import os
 from pathlib import Path
+import re
 from fastapi import UploadFile, HTTPException
 from bgProcessing.tasks import analyze_malware_task
 from cores.async_pg_db import SessionLocal
@@ -264,4 +265,51 @@ async def get_analysis_report(uid: int, task_id: str):
                 "created_at": report.created_at,
             }
         }
+
+
+# from fastapi.responses import StreamingResponse
+
+# def iterfile(path, chunk_size: int = 1024 * 1024):  # 1MB chunk
+#     with open(path, "rb") as f:
+#         while True:
+#             chunk = f.read(chunk_size)
+#             if not chunk:
+#                 break
+#             yield chunk
+
+
+BASE_REPORT_PATH = Path("reports").resolve()
+
+ALLOWED_PLATFORMS = {"cape", "virustotal", "mobsf"}
+
+FILENAME_REGEX = re.compile(
+    r"^(cape|virustotal|mobsf)-([a-fA-F0-9]{32})$"
+)
+
+async def get_analy_report(file_name):
+    match = FILENAME_REGEX.match(file_name)
+    if not match:
+        raise HTTPException(status_code=400, detail="Invalid file name format")
+
+    platform, md5 = match.groups()
+
+    if platform not in ALLOWED_PLATFORMS:
+        raise HTTPException(status_code=400, detail="Invalid platform")
+    
+    file_path = (BASE_REPORT_PATH / f"{platform}-{md5}.json").resolve()
+
+    if not str(file_path).startswith(str(BASE_REPORT_PATH)):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    if not file_path.is_file():
+        raise HTTPException(status_code=404, detail="Report not found")
+    
+    # return StreamingResponse(
+    #     iterfile(file_path),
+    #     media_type="application/json",
+    #     headers={
+    #         "Content-Disposition": f"attachment; filename={platform}-{md5}.json"
+    #     }
+    # )
+    return file_path
 
