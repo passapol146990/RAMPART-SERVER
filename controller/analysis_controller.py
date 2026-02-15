@@ -16,7 +16,10 @@ from celery.result import AsyncResult
 from bgProcessing.celery_app import celery_app
 
 UPLOAD_DIR = Path("temps_files")
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+REPORTS_DIR = Path("reports")
+
+for directory in [UPLOAD_DIR, REPORTS_DIR]:
+    directory.mkdir(parents=True, exist_ok=True)
 
 MAX_FILE_SIZE = 1 * 1024 * 1024 * 1024  # 1GB
 CHUNK_SIZE = 1024 * 1024
@@ -145,6 +148,7 @@ async def upload_file_controller(
                 await touch_upload_time(session, existing_upload)
 
                 analysis = await get_table_analy(session, existing_file.fid)
+                print(analysis)
                 if analysis:
                     return {
                         "success": True,
@@ -167,6 +171,7 @@ async def upload_file_controller(
             # 6. ตรวจสอบ analysis ซ้ำ
             # =========================
             existing_analysis = await get_table_analy(session, existing_file.fid)
+            print(existing_analysis)
             if existing_analysis:
                 return {
                     "success": True,
@@ -183,10 +188,11 @@ async def upload_file_controller(
             analysis_tool = determine_analysis_tool(file_extension)
             file_hashes = calculate_file_hashes(file_path)
 
+            print(file_hashes)
+
             analysis = await insert_table_analy(
                 session=session,
                 fid=existing_file.fid,
-                platform=[analysis_tool]
             )
 
             task = analyze_malware_task.delay(
@@ -243,6 +249,8 @@ async def get_analysis_report(uid: int, task_id: str):
             "task_id": task_id,
             "status": analysis.status,
             "report": {
+                "tools" : report.analysis.platform,
+                "md5" : report.analysis.md5,
                 "rid": report.rid,
                 "rampart_score": float(report.rampart_score) if report.rampart_score else None,
                 "package": report.package,

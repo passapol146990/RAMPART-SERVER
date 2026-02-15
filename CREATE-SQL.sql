@@ -48,7 +48,8 @@ CREATE TABLE "analysis" (
     "fid" INTEGER NOT NULL,
     "task_id" TEXT,
     "status" VARCHAR(50) DEFAULT 'pending', -- pending, processing, completed
-    "platform" TEXT[],                      -- PostgreSQL รองรับ Array โดยใช้ []
+    "platform" TEXT DEFAULT "",                      -- PostgreSQL รองรับ Array โดยใช้ []
+    "md5" TEXT DEFAULT NULL,
     "created_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_analysis_file FOREIGN KEY ("fid") REFERENCES "files" ("fid") ON DELETE CASCADE
 );

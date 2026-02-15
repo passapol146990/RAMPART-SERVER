@@ -269,10 +269,10 @@ class CAPEAnalyzer:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    def get_report(self, task_id: int):
+    def get_report(self, task_id: int, md5 :str ):
         report = self.get_task_report(task_id)
         
-        with open(f'z-report2.0-cape-{task_id}.json','w',encoding='utf-8') as wf:
+        with open(f'reports/cape-{md5}.json','w',encoding='utf-8') as wf:
             wf.write(json.dumps(report, ensure_ascii=False, indent=4))
 
         if report.get("status") != "success": return report

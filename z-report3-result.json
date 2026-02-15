@@ -2,114 +2,303 @@
     "virustotal": {
         "file_info": {
             "names": [
-                "c5ab0adaedf391a395387df33b0bf6854f1ccc9c5da937915ea86b5eec6e6103.apk",
-                "v4blnks0.exe",
-                "evil.apk"
+                "AnyDesk.exe",
+                "AnyDesk (1).exe",
+                "AnyDesk (3).exe"
             ],
-            "meaningful_name": "c5ab0adaedf391a395387df33b0bf6854f1ccc9c5da937915ea86b5eec6e6103.apk",
-            "type": "Android",
-            "size": 2332330,
+            "meaningful_name": "AnyDesk.exe",
+            "type": "Win32 EXE",
+            "size": 8044472,
             "hashes": {
-                "md5": "54a7d8d8f6ee586e266f369b0a8a8dee",
-                "sha1": "3db0f3cb7565a183f8601f5515315ce8e36823d5",
-                "sha256": "c5ab0adaedf391a395387df33b0bf6854f1ccc9c5da937915ea86b5eec6e6103"
+                "md5": "71c0e655a6c3455f106b130b0c191465",
+                "sha1": "835fb3b1e509f031a3028ddfc6e8222bcab26d8c",
+                "sha256": "bfc1675ee1e358db8356f515aaded7962923e426aa0a0a1c0eddfc4dab053f89"
             }
         },
         "app_identity": {
-            "package_name": "com.example.reverseshell2",
-            "developer_signer": "US",
-            "is_verified": null,
+            "package_name": "AnyDesk",
+            "developer_signer": "AnyDesk Software GmbH",
+            "is_verified": true,
             "is_trusted_developer": false
         },
         "scan_summary": {
-            "malicious_count": 31,
+            "malicious_count": 0,
             "suspicious_count": 0,
-            "undetected_count": 36,
+            "undetected_count": 72,
             "harmless_count": 0,
             "total_scanners": 76,
-            "reputation": -12,
+            "reputation": 1,
             "community_votes": {
-                "harmless": 0,
-                "malicious": 2
+                "harmless": 1,
+                "malicious": 0
             }
         },
         "threats_found": {
-            "malicious": [
-                "Lionic: Trojan.AndroidOS.SpyAgent.C!c",
-                "CTX: apk.trojan.spyagent",
-                "CAT-QuickHeal: Android.Agent.GEN37832",
-                "Skyhigh: Artemis!Trojan",
-                "K7GW: Trojan ( 0056b0d51 )",
-                "VirIT: Android.Trj.Agent.HNV",
-                "SymantecMobileInsight: Trojan:Malapp",
-                "Symantec: Trojan.Gen.NPE",
-                "ESET-NOD32: Android/Spy.Agent.BEL trojan",
-                "Cynet: Malicious (score: 99)",
-                "Kaspersky: HEUR:Trojan-Spy.AndroidOS.Agent.abg",
-                "Alibaba: TrojanSpy:Android/Agent.1e22c830",
-                "NANO-Antivirus: Trojan.Android.Mlw.jiwfmq",
-                "Tencent: a.privacy.InfoStealer",
-                "Sophos: Andr/Xgen-BMC",
-                "F-Secure: Malware.ANDROID/SpyAgent.FKWC.Gen",
-                "DrWeb: Android.Spy.1131.origin",
-                "Zillya: Trojan.Agent.Android.340463",
-                "huorong: TrojanSpy/Android.SMSSpy.ah",
-                "Varist: AndroidOS/Agent.GUL.gen!Eldorado",
-                "Avira: ANDROID/SpyAgent.FKWC.Gen",
-                "Microsoft: Trojan:AndroidOS/AVerseFalc!rfn",
-                "ZoneAlarm: Andr/Xgen-BMC",
-                "Avast-Mobile: Android:Evo-gen [Trj]",
-                "Google: Detected",
-                "BitDefenderFalx: Android.Trojan.SpyAgent.GL",
-                "AhnLab-V3: Trojan/Android.SpyAgent.989141",
-                "Rising: Spyware.Agent/Android!8.3BE (CLOUD)",
-                "TrellixENS: Artemis!54A7D8D8F6EE",
-                "Ikarus: Trojan-Spy.AndroidOS.Agent",
-                "Fortinet: Android/Agent.BEL!tr.spy"
-            ],
+            "malicious": [],
             "suspicious": []
         },
         "security_analysis": {
-            "sigma_rules": {},
+            "sigma_rules": {
+                "critical": 0,
+                "high": 1,
+                "medium": 4,
+                "low": 0
+            },
             "sandbox_results": [
                 {
-                    "sandbox": "Zenbox android",
-                    "category": "malicious",
+                    "sandbox": "Zenbox",
+                    "category": "harmless",
                     "malware_classification": [
-                        "MALWARE",
-                        "TROJAN",
-                        "EVADER",
-                        "RAT"
+                        "CLEAN"
                     ]
                 }
             ]
         },
-        "permissions": [
-            "android.permission.ACCESS_FINE_LOCATION",
-            "android.permission.VIBRATE",
-            "android.permission.READ_EXTERNAL_STORAGE",
-            "android.permission.RECEIVE_BOOT_COMPLETED",
-            "android.permission.INTERNET",
-            "android.permission.READ_SMS",
-            "android.permission.SYSTEM_ALERT_WINDOW",
-            "android.permission.ACCESS_WIFI_STATE",
-            "android.permission.ACCESS_NETWORK_STATE",
-            "android.permission.WAKE_LOCK",
-            "android.permission.READ_CALL_LOG",
-            "android.permission.CAMERA",
-            "android.permission.READ_PHONE_STATE",
-            "android.permission.ACCESS_COARSE_LOCATION",
-            "android.permission.WRITE_EXTERNAL_STORAGE",
-            "android.permission.RECORD_AUDIO"
-        ],
+        "permissions": [],
         "tags": [
-            "reflection",
-            "apk",
-            "android",
-            "checks-gps",
-            "telephony",
-            "checks-network-adapters"
+            "peexe",
+            "signed",
+            "overlay"
         ]
     },
-    "mobsf_error": "Failed to upload file not support"
+    "cape": {
+        "source": "CAPE Sandbox",
+        "score": 8.0,
+        "malware_family": null,
+        "mitre_attack_techniques": [
+            "T1027.002",
+            "T1497",
+            "T1564",
+            "T1564.001",
+            "T1071",
+            "T1082",
+            "T1106",
+            "T1027",
+            "T1485"
+        ],
+        "critical_signatures": [
+            {
+                "name": "injection_network_traffic",
+                "description": "A system process is generating network traffic likely as a result of process injection",
+                "severity": 3
+            },
+            {
+                "name": "stealth_file",
+                "description": "Creates a hidden or system file",
+                "severity": 3
+            },
+            {
+                "name": "removes_zoneid_ads",
+                "description": "Attempts to remove evidence of file being downloaded from the Internet",
+                "severity": 3
+            },
+            {
+                "name": "anomalous_deletefile",
+                "description": "Anomalous file deletion behavior detected (10+)",
+                "severity": 2
+            },
+            {
+                "name": "antidebug_guardpages",
+                "description": "Guard pages use detected - possible anti-debugging.",
+                "severity": 2
+            },
+            {
+                "name": "mouse_movement_detect",
+                "description": "Checks for mouse movement",
+                "severity": 2
+            },
+            {
+                "name": "dynamic_function_loading",
+                "description": "Dynamic (imported) function loading detected",
+                "severity": 2
+            },
+            {
+                "name": "reads_memory_remote_process",
+                "description": "Reads from the memory of another process",
+                "severity": 2
+            },
+            {
+                "name": "reads_self",
+                "description": "Reads data out of its own binary image",
+                "severity": 2
+            },
+            {
+                "name": "packer_unknown_pe_section_name",
+                "description": "The binary contains an unknown PE section name indicative of packing",
+                "severity": 2
+            }
+        ],
+        "network_behavior": {
+            "http_traffic": [],
+            "dns_queries": [
+                {
+                    "request": "boot.net.anydesk.com",
+                    "answer": [
+                        {
+                            "type": "A",
+                            "data": "57.128.101.75"
+                        },
+                        {
+                            "type": "A",
+                            "data": "37.59.29.33"
+                        },
+                        {
+                            "type": "CNAME",
+                            "data": "boot-relays.net.anydesk.com"
+                        },
+                        {
+                            "type": "A",
+                            "data": "57.128.101.74"
+                        },
+                        {
+                            "type": "A",
+                            "data": "141.95.145.210"
+                        },
+                        {
+                            "type": "A",
+                            "data": "57.128.101.77"
+                        },
+                        {
+                            "type": "A",
+                            "data": "195.181.174.173"
+                        },
+                        {
+                            "type": "A",
+                            "data": "195.181.174.174"
+                        },
+                        {
+                            "type": "A",
+                            "data": "57.128.101.78"
+                        }
+                    ]
+                },
+                {
+                    "request": "boot.net.anydesk.com",
+                    "answer": []
+                },
+                {
+                    "request": "crl.anydesk.com",
+                    "answer": []
+                },
+                {
+                    "request": "relay-e358c52a.net.anydesk.com",
+                    "answer": []
+                },
+                {
+                    "request": "api.playanext.com",
+                    "answer": [
+                        {
+                            "type": "A",
+                            "data": "54.230.42.34"
+                        },
+                        {
+                            "type": "A",
+                            "data": "54.230.42.126"
+                        },
+                        {
+                            "type": "CNAME",
+                            "data": "d1atxff5avezsq.cloudfront.net"
+                        },
+                        {
+                            "type": "A",
+                            "data": "54.230.42.49"
+                        },
+                        {
+                            "type": "A",
+                            "data": "54.230.42.68"
+                        }
+                    ]
+                }
+            ],
+            "ip_connections": [
+                {
+                    "dst_ip": "40.119.213.159",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                },
+                {
+                    "dst_ip": "172.172.255.218",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                },
+                {
+                    "dst_ip": "52.123.129.14",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                },
+                {
+                    "dst_ip": "54.230.42.126",
+                    "country": "unknown",
+                    "ports": [
+                        80
+                    ]
+                },
+                {
+                    "dst_ip": "15.235.229.244",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                },
+                {
+                    "dst_ip": "9.9.9.9",
+                    "country": "unknown",
+                    "ports": [
+                        53
+                    ]
+                },
+                {
+                    "dst_ip": "57.128.101.78",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                },
+                {
+                    "dst_ip": "72.145.35.103",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                },
+                {
+                    "dst_ip": "13.107.246.59",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                },
+                {
+                    "dst_ip": "110.164.21.177",
+                    "country": "unknown",
+                    "ports": [
+                        443
+                    ]
+                }
+            ]
+        },
+        "system_behavior": {
+            "files_written": [
+                "C:\\Windows\\System32\\kernel.appcore.dll",
+                "\\Device\\CNG",
+                "C:\\Windows\\System32\\windows.storage.dll",
+                "C:\\Windows\\System32\\wldp.dll",
+                "C:\\Users\\cape\\AppData\\Roaming\\AnyDesk"
+            ],
+            "registry_keys_modified": [
+                "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager",
+                "HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Control\\Session Manager\\ResourcePolicies",
+                "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Nls\\CustomLocale",
+                "HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Control\\Nls\\CustomLocale\\en-US",
+                "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Nls\\ExtendedLocale"
+            ],
+            "commands_executed": []
+        }
+    }
 }

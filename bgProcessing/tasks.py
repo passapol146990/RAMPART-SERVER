@@ -42,14 +42,16 @@ def analyze_malware_task(self, analy_id: str, file_path: str, file_hashes: dict,
 
         if not analy:
             return { "success": False, "task_id": f"Analysis not found for task_id={self.request.id}" }
+        
+        md5 = file_hashes.get('md5', '')
 
         analy.status = "processing"
         analy.task_id = self.request.id
+        analy.md5 = md5
         db.commit()
 
         # ถ้าไม่อยากให้ log งงอาจจเพิ่มตรวจสอบ  PREVIOUS ว่ามันทำซ้ำไหม
         print(f"#######################[ {self.request.id} ]#######################")
-        md5 = file_hashes.get('md5', '')
         # เอาผลการวิเคราะห์เดิมเก็บมา ถ้าไม่มีจะได้ {} แต่ถ้ามีจะไม่วิเคราะห์ซ้ำ
         results = previous_results if previous_results else {}
         PREVIOUS = []
@@ -61,6 +63,7 @@ def analyze_malware_task(self, analy_id: str, file_path: str, file_hashes: dict,
         # PART 1: VirusTotal (Run Once) !!! cape_task_id is None and  สำคัญมากเอาไว้สำหรับ retry cape ในกณี รอการวิเคราะห์ต้องมีไม่งั้นจะเปลือง VT + Mobsf เพราะวนลูปจนกว่า cape จำเสร็จ
         # ---------------------------------------------------------
         if cape_task_id is None and "virustotal" not in results and "vt_skipped" not in results:
+            analysis_tool = analysis_tool+",virustotal"
             vt = VirusTotal()
             print(f"[VT] Starting VT Analysis: {md5}")
             
@@ -158,6 +161,7 @@ def analyze_malware_task(self, analy_id: str, file_path: str, file_hashes: dict,
         # ---------------------------------------------------------
         if "cape" in analysis_tool:
             cape = CAPEAnalyzer()
+            print(f"cape_task_id ==> {cape_task_id}")
             # cape_task_id จะได้ตอนที่ไม่มี ID จะสั่งรันซ้ำในกรณีกำลังวิเคราะห์ 
             if cape_task_id is None:
                 # 3.1 First time / Check exist
@@ -193,7 +197,6 @@ def analyze_malware_task(self, analy_id: str, file_path: str, file_hashes: dict,
                     )
                 else:
                     results["cape_error"] = "Failed to get CAPE Task ID"
-
             else:
                 print(f"[CAPE] Polling ID: {cape_task_id}")
                 status = cape.get_task_status(cape_task_id)
@@ -202,7 +205,9 @@ def analyze_malware_task(self, analy_id: str, file_path: str, file_hashes: dict,
                 
                 if state == 'reported':
                     print("[CAPE] Finished!")
-                    rp = cape.get_report(cape_task_id)
+                    print(f"[CAPE] ===> MD5 {md5}")
+                    rp = cape.get_report(cape_task_id, md5)
+                    analy.cape_id = cape_task_id
                     if rp['status'] == 'success':
                         print(f"[CAPE] Report fetch report success")
                         results["cape"] = rp['data']
@@ -244,10 +249,10 @@ def analyze_malware_task(self, analy_id: str, file_path: str, file_hashes: dict,
         if isinstance(response, str):
             try: final_data = json.loads(response.replace("```json","").replace("```",""))
             except: pass
-        try:
-            with open('z-report4-gemini.json', 'w', encoding='utf-8') as f:
-                json.dump(final_data, f, ensure_ascii=False, indent=4)
-        except: pass
+        # try:
+        #     with open('z-report4-gemini.json', 'w', encoding='utf-8') as f:
+        #         json.dump(final_data, f, ensure_ascii=False, indent=4)
+        # except: pass
         
         report_data = map_final_data_to_report(final_data)
         stmt = select(Reports).where(Reports.aid == analy.aid)
@@ -266,6 +271,8 @@ def analyze_malware_task(self, analy_id: str, file_path: str, file_hashes: dict,
             db.add(report)
 
         analy.status = "success"
+        print("INSERT REPORT DB ==> ",analysis_tool)
+        analy.platform = analysis_tool
         db.commit()
         return {"success": True, "task_id":f"Analysis Successfully. : {self.request.id}"}
     except Retry:

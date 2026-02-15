@@ -247,7 +247,7 @@ class VirusToTalAPI:
 
         try:
             raw_report = self._make_request("GET", url)
-            with open('z-report1-vt.json','w',encoding='utf-8') as wf:
+            with open(f'reports/virustotal-{file_hash}.json','w',encoding='utf-8') as wf:
                 wf.write(json.dumps(raw_report,ensure_ascii=False, indent=4))
                 wf.close()
             data = self._clean_virustotal_report(raw_report)
@@ -261,7 +261,7 @@ class VirusToTalAPI:
 
         try:
             raw_report = self._make_request("GET", url)
-            with open('z-report1-vt.json','w',encoding='utf-8') as wf:
+            with open(f'reports/virustotal-{file_hash}.json','w',encoding='utf-8') as wf:
                 wf.write(json.dumps(raw_report, ensure_ascii=False, indent=4))
                 wf.close()
             data =  self._clean_virustotal_report(raw_report)

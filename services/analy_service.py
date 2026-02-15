@@ -93,13 +93,11 @@ async def insert_table_analy(
     session: AsyncSession,
     *,
     fid: int,
-    platform: Optional[List[str]] = None
 ) -> Analysis:
 
     analy = Analysis(
         fid=fid,
         task_id=None,
-        platform=platform or [],
         status="pending"
     )
 
@@ -136,5 +134,7 @@ async def get_report_by_aid(
         .where(Reports.aid == aid)
     )
     result = await session.execute(stmt)
-    return result.scalar_one_or_none()
+    report = result.scalar_one_or_none()
+    
+    return report
 

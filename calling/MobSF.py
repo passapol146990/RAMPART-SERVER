@@ -137,10 +137,6 @@ class MobSFCall:
         except Exception as e: return {"success": False, "error": str(e)}
 
     def scan_uploaded_file(self, file_hash, timeout=None):
-        """
-        สั่ง Scan ไฟล์ตาม Hash
-        timeout: ถ้าใส่มา จะทำการตัด connection เมื่อครบเวลา (Fire-and-Forget)
-        """
         url = f"{self.base_url}/api/v1/scan"
         data = {'hash': file_hash}
         try:
@@ -161,7 +157,7 @@ class MobSFCall:
             response = requests.post(url, headers=self._get_headers(), data=data)
             if response.status_code == 200:
                 raw = response.json()
-                with open(f'z-report2.0-mob.json', 'w', encoding='utf-8') as f: json.dump(raw, f)
+                with open(f'reports/mobsf-{file_hash}.json', 'w', encoding='utf-8') as f: json.dump(raw, f)
                 return {"success": True, "data": clean_mobsf_report(raw)}
             else:
                 return {"success": False, "error": "Report not ready"}

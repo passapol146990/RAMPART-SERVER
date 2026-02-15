@@ -113,18 +113,16 @@ class Analysis(Base):
         nullable=False
     )
 
-    task_id: Mapped[str | None] = mapped_column(nullable=True)
+    task_id: Mapped[str | None] = mapped_column(Text,nullable=True)
+
+    md5 : Mapped[str | None] = mapped_column(Text,nullable=True)
 
     status: Mapped[str] = mapped_column(
         String(50),
         server_default=text("'pending'")
     )
 
-    platform: Mapped[list[str]] = mapped_column(
-        ARRAY(String),
-        nullable=False,
-        default=[]
-    )
+    platform: Mapped[str] = mapped_column()
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -151,39 +149,39 @@ class Reports(Base):
     )
 
     rampart_score: Mapped[float | None] = mapped_column(
-        Numeric(5, 2)
+        Numeric(5, 2),nullable=True
     )
 
     package: Mapped[str | None] = mapped_column(
-        Text
+        Text,nullable=True
     )
 
     type: Mapped[str | None] = mapped_column(
-        String(255)
+        String(255),nullable=True
     )
 
     score: Mapped[float | None] = mapped_column(
-        Numeric(5, 2)
+        Numeric(5, 2),nullable=True
     )
 
     risk_level: Mapped[str | None] = mapped_column(
-        String(128)
+        String(128),nullable=True
     )
 
     color: Mapped[str | None] = mapped_column(
-        String(128)
+        String(128),nullable=True
     )
 
     recommendation: Mapped[str | None] = mapped_column(
-        Text
+        Text,nullable=True
     )
 
     analysis_summary: Mapped[str | None] = mapped_column(
-        Text
+        Text,nullable=True
     )
 
     risk_indicators: Mapped[list[str] | None] = mapped_column(
-        Text
+        Text,nullable=True
     )
 
     created_at: Mapped[datetime] = mapped_column(
