@@ -25,4 +25,4 @@ async def require_access_token(
             }
         )
 
-    return veri
+    return int(veri)

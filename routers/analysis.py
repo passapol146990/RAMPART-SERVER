@@ -15,6 +15,7 @@ async def uploadFile(
     uid: str = Depends(require_access_token), 
     privacy:bool = Form(False)
 ):
+    print(uid)
     return await upload_file_controller(file, uid, privacy)
 
 @router.post("/analy/report")

@@ -116,6 +116,7 @@ def analyze_malware_task(self, analy_id: str, file_path: str, file_hashes: dict,
                             countdown=30, 
                             args=[], 
                             kwargs={
+                                'analy_id' : analy_id,
                                 'file_path': file_path, 'file_hashes': file_hashes, 
                                 'total_size': total_size, 'analysis_tool': analysis_tool,
                                 'previous_results': results
@@ -139,6 +140,7 @@ def analyze_malware_task(self, analy_id: str, file_path: str, file_hashes: dict,
                                     countdown=30, 
                                     args=[],
                                     kwargs={
+                                        'analy_id' : analy_id,
                                         'file_path': file_path, 'file_hashes': file_hashes, 
                                         'total_size': total_size, 'analysis_tool': analysis_tool,
                                         'previous_results': results
@@ -180,6 +182,7 @@ def analyze_malware_task(self, analy_id: str, file_path: str, file_hashes: dict,
                         countdown=countdown,
                         args=[],
                         kwargs={
+                            'analy_id' : analy_id,
                             'file_path': file_path,
                             'file_hashes': file_hashes,
                             'total_size': total_size,
@@ -215,6 +218,7 @@ def analyze_malware_task(self, analy_id: str, file_path: str, file_hashes: dict,
                         countdown=30, 
                         args=[],
                         kwargs={
+                            'analy_id' : analy_id,
                             'file_path': file_path, 'file_hashes': file_hashes, 
                             'total_size': total_size, 'analysis_tool': analysis_tool,
                             'previous_results': results,
